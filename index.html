@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ТРЕНАЖЕР — life.ed.school</title>
+<meta name="description" content="Онлайн-генератор математичних прикладів: натуральні та цілі числа, дроби. Безкінечна генерація завдань з перевіркою відповіді, таймером і лічильником завдань.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>/* ------------------------------------------------------------
+   Шрифт: Gilroy — комерційний шрифт, файлів немає у публічному
+   доступі. Якщо у вас є ліцензійні файли — покладіть їх у
+   ./fonts/ з такими іменами, і сайт підхопить їх автоматично.
+   Поки файлів немає, використовується фолбек Poppins (Google
+   Fonts) — він геометрично найближчий до Gilroy.
+   ------------------------------------------------------------ */
+@font-face{
+  font-family:'Gilroy';
+  src:url('fonts/Gilroy-Regular.woff2') format('woff2'),
+      url('fonts/Gilroy-Regular.woff') format('woff');
+  font-weight:400; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Gilroy';
+  src:url('fonts/Gilroy-Medium.woff2') format('woff2'),
+      url('fonts/Gilroy-Medium.woff') format('woff');
+  font-weight:500; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Gilroy';
+  src:url('fonts/Gilroy-SemiBold.woff2') format('woff2'),
+      url('fonts/Gilroy-SemiBold.woff') format('woff');
+  font-weight:600; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Gilroy';
+  src:url('fonts/Gilroy-Bold.woff2') format('woff2'),
+      url('fonts/Gilroy-Bold.woff') format('woff');
+  font-weight:700; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Gilroy';
+  src:url('fonts/Gilroy-ExtraBold.woff2') format('woff2'),
+      url('fonts/Gilroy-ExtraBold.woff') format('woff');
+  font-weight:800; font-style:normal; font-display:swap;
+}
+
+:root{
+  --bg:#FFFFFF;
+  --bg-soft:#F7F9F9;
+  --panel:#FFFFFF;
+  --panel-border:#E7ECEC;
+  --ink:#16211F;
+  --ink-soft:#6B7A78;
+  --accent:#14B7B7;
+  --accent-deep:#0E9494;
+  --accent-soft:#E3F7F7;
+  --accent2:#DEA433;
+  --accent2-deep:#C08D26;
+  --accent2-soft:#FBF0DC;
+  --orange:#DEA433;
+  --orange-deep:#C08D26;
+  --orange-soft:#FBF0DC;
+  --good:#1FA97A;
+  --good-bg:#E7F8F1;
+  --bad:#E5484D;
+  --bad-bg:#FDEAEA;
+  --radius:14px;
+  --font-ui:'Gilroy','Poppins',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','Space Mono',monospace;
+}
+
+*{box-sizing:border-box;}
+html{ background-color:var(--bg); }
+html,body{margin:0;padding:0;}
+body{
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle, rgba(222,164,51,0.10) 1.4px, transparent 1.4px),
+    radial-gradient(circle, rgba(120,130,130,0.10) 1.1px, transparent 1.1px);
+  background-size: 28px 28px, 28px 28px;
+  background-position: 0 0, 14px 14px;
+  color:var(--ink);
+  font-family:var(--font-ui);
+  min-height:100vh;
+}
+.app{max-width:1180px;margin:0 auto;padding:22px 20px 70px;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:2px 2px 20px; flex-wrap:wrap;
+}
+.wordmark{display:flex; align-items:baseline; gap:10px;}
+.wordmark .name{
+  font-weight:800; font-size:clamp(22px,3.4vw,28px); letter-spacing:-0.3px; color:var(--ink);
+}
+.wordmark .name span{color:var(--accent);}
+.wordmark .domain{
+  font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+  border:1px solid var(--panel-border); padding:3px 9px; border-radius:20px;
+}
+.gen-counter{
+  font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft);
+  background:var(--bg-soft); border:1px solid var(--panel-border); border-radius:20px;
+  padding:8px 16px; display:flex; align-items:center; gap:8px;
+}
+.gen-counter .dot{width:7px;height:7px;border-radius:50%;background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); animation:pulse 1.6s infinite;}
+.gen-counter b{color:var(--ink); font-weight:700;}
+@keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+/* ---------- Folder-tab navigation ---------- */
+.tab-backdrop{
+  position:fixed; inset:0; background:rgba(8,16,16,0.5); backdrop-filter:blur(2.5px) saturate(0.7);
+  opacity:0; visibility:hidden; transition:opacity .18s ease, visibility .18s; z-index:25;
+}
+.tab-backdrop.show{ opacity:1; visibility:visible; }
+.tabbar{ display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px 8px; position:relative; z-index:30; padding-left:4px; }
+.tabbar.has-open .tab:not(.open) .tab-face{
+  opacity:0.4; filter:grayscale(0.4) brightness(0.82); transition:opacity .18s ease, filter .18s ease;
+}
+.tab{ position:relative; z-index:1; }
+.tab.open{ z-index:40; }
+.tab-face{
+  display:flex; align-items:center; gap:9px; height:50px; white-space:nowrap;
+  padding:0 20px; background:var(--bg-soft); color:var(--ink-soft);
+  border:1px solid var(--panel-border);
+  border-radius:14px; font-weight:700; font-size:14.5px; cursor:pointer;
+  transition:background .18s ease, color .18s ease, box-shadow .18s ease, opacity .18s ease, filter .18s ease; user-select:none;
+}
+.tab-icon{
+  width:24px; height:24px; border-radius:7px; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Georgia',serif; font-weight:700; font-size:14px;
+  background:var(--accent-soft); color:var(--accent-deep);
+}
+.tab-label{ letter-spacing:-0.1px; }
+.tab-face .n{
+  font-family:var(--font-mono); font-size:10.5px; color:var(--accent);
+  background:var(--accent-soft); border-radius:5px; padding:1px 6px;
+}
+.tab.open .tab-face{
+  background:var(--panel); color:var(--ink);
+  box-shadow:0 -3px 0 var(--accent) inset, 0 10px 24px -14px rgba(20,50,50,0.35);
+}
+.tab:not(.open) .tab-face:hover{ background:#EEF3F3; color:var(--ink); }
+.tab.open .tab-icon{ background:var(--accent); color:#fff; }
+.tab-panel{
+  position:absolute; top:calc(100% + 8px); left:0; min-width:300px; max-width:340px;
+  background:var(--panel); border:1px solid var(--panel-border); border-radius:12px;
+  box-shadow:0 24px 48px -20px rgba(20,50,50,0.18);
+  padding:10px; opacity:0; visibility:hidden; transform:translateY(-6px) scale(.98);
+  transition:opacity .16s ease, transform .16s ease, visibility .16s;
+}
+.tab.open .tab-panel{
+  opacity:1; visibility:visible; transform:translateY(0) scale(1);
+}
+.folder{ border-radius:9px; overflow:hidden; }
+.folder-head{
+  display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+  background:none; border:none; cursor:pointer; padding:10px 10px; font-family:inherit;
+  font-size:13.5px; font-weight:700; color:var(--ink); border-radius:9px;
+}
+.folder-head:hover{ background:var(--accent-soft); color:var(--accent-deep); }
+.folder-arrow{ font-size:10px; color:var(--accent); transition:transform .2s ease; display:inline-block; }
+.folder.open .folder-arrow{ transform:rotate(90deg); }
+.folder.open .folder-head{ background:var(--accent-soft); color:var(--accent-deep); }
+.folder-body{
+  max-height:0; overflow:hidden; transition:max-height .28s ease, opacity .2s ease;
+  opacity:0;
+}
+.folder.open .folder-body{ max-height:600px; opacity:1; }
+.folder-body-inner{ padding:2px 6px 8px 30px; display:flex; flex-direction:column; gap:1px; }
+.tl-group-title{
+  font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+  color:var(--ink-soft); padding:10px 8px 4px; margin:0 -8px;
+}
+.tl-group-title:first-child{ padding-top:2px; }
+.tab-leaf{
+  display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer;
+  padding:7px 9px; margin:0 -8px; font-size:13px; color:var(--ink-soft); border-radius:7px; font-family:inherit;
+}
+.tab-leaf.tl-star-item{ display:flex; align-items:center; gap:10px; }
+.tl-stars{ display:inline-flex; gap:2px; letter-spacing:0; flex:none; }
+.tl-stars .star{ font-size:12px; }
+.tl-stars .star.on{ color:var(--accent); }
+.tl-stars .star.off{ color:var(--panel-border); }
+.tl-note{ font-size:12.5px; color:var(--ink-soft); }
+.multi-toggle-link{
+  display:block; width:100%; text-align:center; background:none; border:none; cursor:pointer;
+  padding:10px 8px 4px; margin-top:4px; font-size:12px; font-weight:700; color:var(--accent-deep);
+  border-top:1px dashed var(--panel-border); font-family:inherit;
+}
+.multi-toggle-link:hover{ color:var(--accent); }
+.multi-row{
+  display:flex; align-items:center; gap:9px; padding:7px 8px; margin:0 -8px; border-radius:7px;
+  font-size:12.8px; color:var(--ink); cursor:pointer;
+}
+.multi-row:hover{ background:var(--accent-soft); }
+.multi-row input[type=checkbox]{ width:15px; height:15px; accent-color:var(--accent); flex:none; cursor:pointer; }
+.multi-bar{
+  display:flex; align-items:center; gap:8px; margin-top:8px; padding:10px 8px 2px;
+  border-top:1px dashed var(--panel-border); flex-wrap:wrap;
+}
+.multi-count{ font-size:12px; font-weight:700; color:var(--ink-soft); flex:1; }
+.multi-bar .ghost-btn{ padding:6px 12px; font-size:12px; }
+.multi-bar .start-btn{ padding:7px 16px; font-size:12.5px; margin-top:0; }
+.multi-bar .start-btn:disabled{ opacity:0.45; cursor:default; }
+.combo-group{ margin-bottom:12px; }
+.combo-group-title{ font-size:12px; font-weight:800; color:var(--accent-deep); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+.combo-list{ list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--ink-soft); }
+.combo-list li{ padding:3px 0; }
+.tab-leaf:hover{background:var(--accent-soft); color:var(--accent-deep);}
+.tab-leaf.active{background:var(--accent); color:#fff; font-weight:600;}
+.tab-leaf.active .tl-note{ color:#fff; }
+.tab-leaf.active .star.on, .tab-leaf.active .star.off{ color:#fff; opacity:1; }
+.tab-leaf.active .star.off{ opacity:.45; }
+
+/* Помаранчева спеціальна вкладка — «Генерація прикладів» */
+.tab-special .tab-face{ background:var(--orange-soft); color:var(--orange-deep); }
+.tab-special .tab-icon{ background:rgba(222,164,51,0.22); color:var(--orange-deep); }
+.tab-special.open .tab-face{
+  background:var(--panel); color:var(--orange-deep);
+  box-shadow:0 -3px 0 var(--orange) inset, 0 10px 24px -14px rgba(160,110,20,0.35);
+}
+.tab-special.open .tab-icon{ background:var(--orange); color:#fff; }
+.tab-special .folder-arrow{ color:var(--orange); }
+.tab-special .folder-head:hover, .tab-special .folder.open .folder-head{ background:var(--orange-soft); color:var(--orange-deep); }
+.tab-special .tab-leaf:hover{ background:var(--orange-soft); color:var(--orange-deep); }
+.tab-special .tab-leaf.active{ background:var(--orange); color:#fff; }
+.tab-special .tl-stars .star.on{ color:var(--orange); }
+.tab-special .multi-toggle-link{ color:var(--orange-deep); }
+.tab-special .multi-row input[type=checkbox]{ accent-color:var(--orange); }
+.tab-special .multi-row:hover{ background:var(--orange-soft); }
+
+.main{
+  background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
+  padding:32px; min-height:520px; position:relative; margin-top:10px;
+}
+.crumbs{font-size:12px; color:var(--ink-soft); margin-bottom:6px; font-weight:600; font-family:var(--font-mono);}
+.crumbs b{color:var(--accent-deep);}
+h2.title{font-size:23px; font-weight:800; margin:0 0 16px; color:var(--ink); letter-spacing:-0.3px;}
+
+.landing{max-width:600px; position:relative; z-index:1;}
+.landing-art{
+  width:min(55%, 320px); margin:36px auto 0; color:var(--accent); opacity:0.55;
+}
+.landing-art svg{ display:block; width:100%; height:auto; }
+@media (max-width:640px){ .landing-art{ width:70%; } }
+.landing p{color:var(--ink-soft); line-height:1.65; font-size:15px;}
+.landing .tag-row{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 6px;}
+.landing .tag{font-family:var(--font-mono); font-size:12px; background:var(--accent-soft); color:var(--accent-deep); padding:6px 12px; border-radius:20px;}
+.landing .hint-box{margin-top:18px; padding:14px 16px; background:var(--bg-soft); border-radius:10px; border:1px solid var(--panel-border); font-size:13px; color:var(--ink-soft);}
+
+/* ---------- Settings ---------- */
+.settings-grid{display:flex; flex-direction:column; gap:16px; max-width:420px;}
+.field label{display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.4px;}
+.field input[type=number]{
+  width:110px; padding:9px 11px; border:1.5px solid var(--panel-border); border-radius:8px;
+  font-family:var(--font-mono); font-size:15px; background:var(--bg-soft); color:var(--ink);
+}
+.field.row{display:flex; align-items:center; gap:10px;}
+.field.row label{margin:0; text-transform:none; letter-spacing:0;}
+.digit-grid{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+.digit-chip{
+  width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  border:1.5px solid var(--panel-border); border-radius:9px; cursor:pointer; font-family:var(--font-mono);
+  font-size:15px; user-select:none; color:var(--ink-soft); background:var(--bg-soft);
+}
+.digit-chip.on{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;}
+.start-btn{
+  margin-top:6px; align-self:flex-start; background:var(--accent); color:#fff; border:none;
+  padding:13px 28px; border-radius:9px; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font-ui);
+}
+.start-btn:hover{background:var(--accent-deep);}
+
+/* ---------- Quiz ---------- */
+.quiz-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+.progress{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft);}
+.timer{font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--accent-deep); padding:5px 14px; border:1.5px solid var(--accent); border-radius:20px;}
+.timer.low{color:var(--bad); border-color:var(--bad);}
+.bar-track{height:5px; background:var(--bg-soft); border-radius:4px; overflow:hidden; margin-bottom:22px;}
+.bar-fill{height:100%; background:var(--accent); transition:width .25s;}
+
+.console, .problem-card{
+  background:var(--accent-soft);
+  border:2px solid var(--accent); border-radius:16px;
+  padding:36px 24px 32px; text-align:center; margin-bottom:20px; position:relative;
+}
+.problem-label{
+  font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px;
+  color:var(--accent-deep); margin-bottom:14px;
+}
+.eq{
+  font-family:var(--font-ui); font-size:clamp(26px,4.6vw,38px); font-weight:800;
+  color:var(--ink); letter-spacing:-0.3px;
+}
+.eq .frac{
+  display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle;
+  margin:0 4px; line-height:1.15; font-size:0.62em; position:relative; top:-0.03em;
+}
+.eq .frac .num{ padding:0 3px 3px; border-bottom:2.5px solid currentColor; }
+.eq .frac .den{ padding:3px 3px 0; }
+.eq sup{ font-size:0.5em; position:relative; top:-0.5em; margin-left:1px; }
+.eq sub{ font-size:0.5em; position:relative; top:0.35em; margin:0 1px; }
+.eq .root-wrap{ display:inline-flex; align-items:flex-start; position:relative; margin:0 1px; }
+.eq .root-idx{ font-size:0.38em; margin-right:-3px; margin-top:0.1em; position:relative; }
+.eq .root-sqrt{ font-size:1em; line-height:0.9; transform:scaleY(1.15); position:relative; top:0.03em; }
+.eq .root-radicand{ border-top:2.5px solid currentColor; padding:0 3px; margin-top:0.06em; }
+.mistake-item .frac, .correct-ans .frac{
+  display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle;
+  margin:0 2px; line-height:1.05; font-size:0.95em;
+}
+.mistake-item .frac .num, .correct-ans .frac .num{ padding:0 2px 1px; border-bottom:1.5px solid currentColor; }
+.mistake-item .frac .den, .correct-ans .frac .den{ padding:1px 2px 0; }
+.ans-widget{ margin-top:26px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+
+.an-canvas{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; min-height:52px; }
+.an-input{
+  border:1.5px solid transparent; border-radius:8px; font-family:var(--font-ui); font-weight:600;
+  text-align:center; background:transparent; color:var(--ink); padding:6px 3px; width:56px; font-size:16px;
+}
+.an-input:focus{ outline:none; background:#fff; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.an-input:disabled{ opacity:0.7; }
+.an-root-input{ width:180px; padding:12px 14px; font-size:19px; }
+.an-leaf{ display:inline-flex; align-items:center; gap:8px; margin:4px; }
+.an-mini-group{ display:none; flex-direction:column; gap:2px; }
+.an-leaf:focus-within .an-mini-group{ display:inline-flex; }
+.an-mini{
+  width:24px; height:16px; padding:0; border-radius:4px; border:1px solid var(--panel-border);
+  background:var(--bg-soft); color:var(--ink-soft); font-size:9px; font-weight:700; cursor:pointer; line-height:1;
+}
+.an-mini:hover{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-deep); }
+.an-mini:disabled{ opacity:0.4; }
+
+.an-frac{ display:inline-flex; align-items:center; gap:6px; margin:3px; }
+.an-whole{ width:44px; }
+.an-frac-stack{ display:inline-flex; flex-direction:column; align-items:stretch; gap:5px; }
+.an-frac-num, .an-frac-den{ display:flex; justify-content:center; }
+.an-frac-bar{ height:2.5px; background:var(--ink); border-radius:2px; }
+
+.an-pow{ display:inline-flex; align-items:flex-start; margin:3px; }
+.an-exp{ display:inline-block; margin-top:-8px; }
+.an-exp-input{ width:44px; font-size:13px; padding:5px 3px; }
+
+.an-root{ display:inline-flex; align-items:center; gap:5px; margin:3px; }
+.an-index{ width:30px; font-size:12px; align-self:flex-start; margin-top:-2px; padding:5px 2px; }
+.an-radicand{ display:flex; }
+
+.an-log{ display:inline-flex; align-items:center; gap:2px; margin:3px; font-weight:700; color:var(--ink); }
+.an-logbase{ width:36px; font-size:12px; align-self:flex-end; margin-top:6px; padding:5px 2px; }
+.an-logarg{ display:inline-flex; }
+
+.an-op-wrap{ display:inline-flex; align-items:center; gap:6px; }
+.an-op-symbol{ font-size:22px; font-weight:800; color:var(--ink); }
+.an-with-combine{ display:inline-flex; flex-direction:column; align-items:center; gap:8px; }
+.an-combine-group{ display:none; gap:5px; flex-wrap:wrap; justify-content:center; }
+.an-with-combine:focus-within .an-combine-group{ display:flex; }
+.an-combine{
+  width:24px; height:24px; padding:0; border-radius:50%; border:1.5px solid var(--accent2);
+  background:var(--panel); color:var(--accent2-deep); font-size:13px; font-weight:800; cursor:pointer; line-height:1;
+}
+.an-combine:hover{ background:var(--accent2); color:#fff; }
+.an-combine:disabled{ opacity:0.35; }
+.ans-plain{
+  width:220px; padding:12px 16px; font-size:19px; font-weight:600; border:1.5px solid var(--accent);
+  border-radius:8px; font-family:var(--font-ui); text-align:center; background:var(--panel); color:var(--ink);
+}
+.ans-plain:focus{ outline:none; background:#fff; box-shadow:0 0 0 3px var(--accent-soft); }
+.ans-plain:disabled{ opacity:0.7; }
+.mistake-item sub, .correct-ans sub{ font-size:0.7em; position:relative; top:0.2em; }
+.mistake-item .root-wrap, .correct-ans .root-wrap{ display:inline-flex; align-items:flex-start; margin:0 1px; }
+.mistake-item .root-idx, .correct-ans .root-idx{ font-size:0.55em; margin-right:-2px; }
+.mistake-item .root-sqrt, .correct-ans .root-sqrt{ transform:scaleY(1.1); position:relative; top:0.03em; }
+.mistake-item .root-radicand, .correct-ans .root-radicand{ border-top:1.5px solid currentColor; padding:0 2px; }
+.mistake-item sup, .correct-ans sup{ font-size:0.7em; position:relative; top:-0.5em; }
+
+.ans-tools{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px; }
+.tool-btn{
+  min-width:38px; height:38px; padding:0 12px; border-radius:9px; border:1.5px solid var(--panel-border);
+  background:var(--bg-soft); color:var(--ink); font-family:var(--font-ui); font-weight:700; font-size:15px;
+  cursor:pointer; transition:background .15s, border-color .15s;
+}
+.tool-btn:hover{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-deep); }
+.tool-btn:disabled{ opacity:0.5; cursor:default; }
+
+.ans-builder{
+  display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--panel);
+  border:1.5px solid var(--accent); border-radius:10px;
+}
+.ans-builder[hidden]{ display:none; }
+.bd-box{
+  width:56px; padding:8px 4px; border:1.5px solid var(--accent); border-radius:7px; font-family:var(--font-ui);
+  font-weight:600; font-size:16px; text-align:center; background:var(--bg-soft); color:var(--ink);
+}
+.bd-box:focus{ outline:none; background:#fff; }
+.bd-sep{ font-size:18px; font-weight:700; color:var(--ink-soft); }
+.root-sym{ font-size:22px; font-weight:700; color:var(--ink); }
+.bd-insert{
+  padding:8px 14px; background:var(--accent); color:#fff; border:none; border-radius:7px;
+  font-family:var(--font-ui); font-weight:700; font-size:13px; cursor:pointer;
+}
+.bd-insert:hover{ background:var(--accent-deep); }
+
+.bd-whole{ width:44px; align-self:center; }
+.bd-frac-stack{ display:flex; flex-direction:column; align-items:stretch; gap:5px; }
+.bd-frac-stack .bd-box{ width:52px; }
+.bd-frac-bar{ height:2.5px; background:var(--ink); border-radius:2px; }
+.bd-base{ width:56px; }
+.bd-exp{ width:44px; font-size:13px; align-self:flex-start; margin-top:-8px; }
+.bd-index{ width:32px; font-size:12px; align-self:flex-start; margin-top:-4px; padding:5px 2px; }
+.bd-logbase{ width:36px; font-size:12px; align-self:flex-end; margin-top:6px; padding:5px 2px; }
+.bd-with-mini{ display:flex; align-items:center; gap:4px; flex-wrap:wrap; max-width:150px; }
+.bd-mini-group{ display:flex; flex-direction:column; gap:2px; }
+.bd-mini{
+  width:20px; height:16px; padding:0; border-radius:4px; border:1px solid var(--panel-border);
+  background:var(--bg-soft); color:var(--ink-soft); font-size:9.5px; font-weight:700; cursor:pointer; flex:none; line-height:1;
+}
+.bd-mini:hover{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-deep); }
+
+.prompt-actions{ display:flex; justify-content:center; gap:12px; margin-top:18px; }
+.prompt-actions button{
+  padding:12px 30px; background:var(--accent); color:#fff; border:none; border-radius:8px;
+  font-size:14.5px; font-weight:700; cursor:pointer; font-family:var(--font-ui); transition:background .15s;
+}
+.prompt-actions button:hover{background:var(--accent-deep);}
+.prompt-actions button.btn-next{ background:var(--accent2); }
+.prompt-actions button.btn-next:hover{ background:var(--accent2-deep); }
+.input-hint{ text-align:center; font-size:12px; color:var(--ink-soft); margin-top:10px; }
+.feedback{text-align:center; font-size:15px; font-weight:700; min-height:0;}
+.feedback:empty{ display:none; }
+.feedback.ok{color:var(--good);}
+.feedback.bad{color:var(--bad);}
+.feedback .correct-ans{font-weight:500; color:var(--ink-soft); display:block; font-size:12.5px; margin-top:4px;}
+
+.quiz-actions{display:flex; justify-content:center; gap:10px; margin-top:4px;}
+.ghost-btn{background:none; border:1.5px solid var(--accent2); color:var(--accent2-deep); padding:9px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-family:inherit; font-weight:600;}
+.ghost-btn:hover{background:var(--accent2); color:#fff;}
+
+.review-badge{ color:var(--accent2-deep); font-weight:700; }
+.bar-track.review .bar-fill{ background:var(--accent2); }
+
+/* ---------- Results ---------- */
+.results{max-width:600px;}
+.score-hero{display:flex; align-items:center; gap:22px; margin:14px 0 24px;}
+.score-ring{
+  --pct:0; --ring-color:var(--accent);
+  width:104px; height:104px; border-radius:50%; flex:none;
+  background: conic-gradient(var(--ring-color) calc(var(--pct)*3.6deg), var(--bg-soft) 0);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 24px -12px rgba(20,50,50,0.25);
+}
+.score-ring-inner{
+  width:78px; height:78px; border-radius:50%; background:var(--panel);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-weight:700; font-size:19px; color:var(--ink);
+}
+.score-hero-text .big{font-family:var(--font-mono); font-size:38px; font-weight:700; color:var(--ink);}
+.score-hero-text .label{color:var(--ink-soft); font-size:13.5px; margin-top:2px;}
+.stat-row{display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;}
+.stat-card{
+  display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:12px;
+  background:var(--bg-soft); border:1px solid var(--panel-border); min-width:150px;
+}
+.stat-card.bad{ background:var(--bad-bg); border-color:transparent; }
+.stat-card.good{ background:var(--good-bg); border-color:transparent; }
+.stat-icon{
+  width:34px; height:34px; border-radius:50%; background:var(--panel);
+  display:flex; align-items:center; justify-content:center; font-size:16px; flex:none;
+}
+.stat-card b{display:block; font-family:var(--font-mono); font-size:17px; color:var(--ink); font-weight:700;}
+.stat-card span{font-size:11.5px; color:var(--ink-soft);}
+.mistakes h3{font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.4px;}
+.mistake-item{
+  display:flex; justify-content:space-between; gap:12px; padding:10px 14px; border-radius:9px;
+  background:var(--bad-bg); margin-bottom:6px; font-family:var(--font-mono); font-size:13px; flex-wrap:wrap;
+}
+.mistake-item .m-your{color:var(--bad);}
+.mistake-item .m-correct{color:var(--good);}
+.no-mistakes{padding:14px; background:var(--good-bg); border-radius:9px; color:var(--good); font-weight:700; font-size:13.5px;}
+.result-actions{display:flex; gap:10px; margin-top:22px;}
+
+footer.site-footer{
+  text-align:center; color:var(--ink-soft); font-size:12px; margin-top:26px; font-family:var(--font-mono);
+}
+
+@media (max-width:720px){
+  .tabbar{flex-wrap:wrap;}
+  .tab-face{padding:0 14px; height:44px; gap:7px;}
+  .tab-panel{min-width:0; max-width:min(92vw, 340px);}
+  .main{border-radius:14px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="wordmark">
+      <div class="name">ТРЕНАЖЕР<span>.</span></div>
+      <div class="domain">life.ed.school</div>
+    </div>
+    <div class="gen-counter"><span class="dot"></span>згенеровано зараз: <b id="genCount">0</b></div>
+  </div>
+  <div class="tab-backdrop" id="tabBackdrop"></div>
+  <nav class="tabbar" id="tabbar"></nav>
+  <main class="main" id="main"></main>
+</div>
+<script>/* =========================================================
+   ЯДРО: точна дробова арифметика
+   ========================================================= */
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function choice(arr){ return arr[randInt(0,arr.length-1)]; }
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a||1; }
+function randDigitNumber(digits){ const min = digits===1?1:Math.pow(10,digits-1); const max = Math.pow(10,digits)-1; return randInt(min,max); }
+
+class Frac{
+  constructor(n,d=1){
+    if(d===0) d=1;
+    if(d<0){ n=-n; d=-d; }
+    const g = gcd(n,d)||1;
+    this.n = n/g; this.d = d/g;
+  }
+  static fromDecimalString(str){
+    str = String(str).trim();
+    const neg = str.startsWith('-');
+    if(neg) str = str.slice(1);
+    const [intPart, decPart=''] = str.split('.');
+    const d = Math.pow(10, decPart.length);
+    let n = parseInt((intPart||'0')+decPart, 10);
+    if(neg) n = -n;
+    return new Frac(n,d);
+  }
+  add(o){ return new Frac(this.n*o.d + o.n*this.d, this.d*o.d); }
+  sub(o){ return new Frac(this.n*o.d - o.n*this.d, this.d*o.d); }
+  mul(o){ return new Frac(this.n*o.n, this.d*o.d); }
+  div(o){ if(o.n===0) return null; return new Frac(this.n*o.d, this.d*o.n); }
+  isInt(){ return this.d===1; }
+  isNeg(){ return this.n<0; }
+  toDecimal(){ return this.n/this.d; }
+  equals(o){ return this.n*o.d === o.n*this.d; }
+  toString(){ return this.d===1 ? String(this.n) : `${this.n}/${this.d}`; }
+  toDecimalString(maxPlaces=6){
+    let val = this.n/this.d;
+    let s = val.toFixed(maxPlaces);
+    s = s.replace(/0+$/,'').replace(/\.$/,'');
+    return s.replace('.', ',');
+  }
+  toMixedString(){
+    const sign = this.n<0 ? -1 : 1;
+    const an = Math.abs(this.n);
+    const whole = Math.floor(an/this.d);
+    const rem = an % this.d;
+    if(rem===0) return String(sign*whole);
+    if(whole===0) return `${sign<0?'-':''}${rem}/${this.d}`;
+    return `${sign<0?'-':''}${whole} ${rem}/${this.d}`;
+  }
+}
+const F = (n,d=1) => new Frac(n,d);
+
+function intPow(base, exp){ let r=1; for(let i=0;i<exp;i++) r*=base; return r; }
+function fracPow(base, exp){
+  if(exp>=0) return new Frac(intPow(base.n, exp), intPow(base.d, exp));
+  return new Frac(intPow(base.d, -exp), intPow(base.n, -exp));
+}
+function integerRoot(val, index){
+  if(!val) return null;
+  if(!val.isInt()){
+    const rn = integerRoot(F(val.n), index);
+    const rd = integerRoot(F(val.d), index);
+    return (rn && rd) ? rn.div(rd) : null;
+  }
+  const n = val.n;
+  if(n<0){
+    if(index%2===0) return null;
+    const pos = integerRoot(F(-n), index);
+    return pos ? F(-pos.n, pos.d) : null;
+  }
+  const approx = Math.round(Math.pow(n, 1/index));
+  for(const cand of [approx-1,approx,approx+1]){
+    if(cand>=0 && Math.pow(cand,index)===n) return F(cand);
+  }
+  return null;
+}
+function stripOuterParens(str){
+  while(str.length>=2 && str[0]==='(' && str[str.length-1]===')'){
+    let depth=0, wraps=true;
+    for(let i=0;i<str.length;i++){
+      if(str[i]==='(') depth++;
+      else if(str[i]===')'){ depth--; if(depth===0 && i!==str.length-1){ wraps=false; break; } }
+    }
+    if(!wraps) break;
+    str = str.slice(1,-1).trim();
+  }
+  return str;
+}
+function findTopLevel(str, chars){
+  let depth=0;
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(c==='(') depth++;
+    else if(c===')') depth--;
+    else if(depth===0 && chars.includes(c)) return {index:i, char:c};
+  }
+  return null;
+}
+function findTopLevelLast(str, chars){
+  let depth=0, found=null;
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(c==='(') depth++;
+    else if(c===')') depth--;
+    else if(depth===0 && chars.includes(c)) found={index:i,char:c};
+  }
+  return found;
+}
+function findAddSub(str){
+  let depth=0;
+  for(let i=str.length-1;i>=0;i--){
+    const c=str[i];
+    if(c===')') depth++;
+    else if(c==='(') depth--;
+    else if(depth===0 && (c==='+'||c==='-')){
+      if(i===0) continue;
+      if(/[0-9)]/.test(str[i-1])) return {index:i, char:c};
+    }
+  }
+  return null;
+}
+function matchBalanced(str, start){
+  let depth=0, i=start;
+  for(; i<str.length; i++){
+    if(str[i]==='(') depth++;
+    else if(str[i]===')'){ depth--; if(depth===0) return i+1; }
+  }
+  return -1;
+}
+function evalLog(base, arg){
+  if(!base || !arg) return null;
+  if(base.n<=0 || base.n===base.d) return null;
+  if(arg.n<=0) return null;
+  for(let q=1; q<=8; q++){
+    for(let p=-40; p<=40; p++){
+      if(p===0) continue;
+      let basePowP;
+      try{ basePowP = fracPow(base, p); }catch(e){ continue; }
+      const val = integerRoot(basePowP, q);
+      if(val && val.equals(arg)) return F(p,q);
+    }
+  }
+  return null;
+}
+// Рекурсивний обчислювач — розуміє звичайну арифметику (+ - × :) з правильним
+// порядком дій, а також дроби, степені, корені й логарифми, вкладені будь-як:
+// 3+4, 100/5/2, 2+3×4, √(2/3), (2/3)^2, log_2(8)/log_3(9) і т.д.
+function evalExpr(str, depth){
+  depth = depth || 0;
+  if(depth > 16 || str==null) return null;
+  str = String(str).trim();
+  if(str==='') return null;
+  str = stripOuterParens(str.replace(/\s+/g,''));
+  if(str==='') return null;
+  str = str.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹]+)(√|∛|∜)/g, (m,sup,sym)=> sup.split('').map(c=>SUP_DIGIT_MAP[c]||'').join('') + sym);
+
+  const addSub = findAddSub(str);
+  if(addSub){
+    const left = evalExpr(str.slice(0,addSub.index), depth+1);
+    const right = evalExpr(str.slice(addSub.index+1), depth+1);
+    if(!left || !right) return null;
+    return addSub.char==='+' ? left.add(right) : left.sub(right);
+  }
+  if(str[0]==='-'){
+    const inner = evalExpr(str.slice(1), depth+1);
+    return inner ? new Frac(-inner.n, inner.d) : null;
+  }
+
+  const mulDiv = findTopLevelLast(str, ['*','×','/']);
+  if(mulDiv){
+    const left = evalExpr(str.slice(0,mulDiv.index), depth+1);
+    const right = evalExpr(str.slice(mulDiv.index+1), depth+1);
+    if(!left || !right) return null;
+    if(mulDiv.char==='/') return right.n!==0 ? left.div(right) : null;
+    return left.mul(right);
+  }
+
+  const powSplit = findTopLevelLast(str, ['^']);
+  if(powSplit){
+    const base = evalExpr(str.slice(0, powSplit.index), depth+1);
+    const expStr = str.slice(powSplit.index+1);
+    if(!base || !/^-?\d+$/.test(expStr)) return null;
+    const exp = parseInt(expStr,10);
+    if(Math.abs(exp) > 60) return null;
+    try{ return fracPow(base, exp); }catch(e){ return null; }
+  }
+
+  if(str.startsWith('log_')){
+    let i = 4, baseStr;
+    if(str[i]==='('){ const end = matchBalanced(str,i); if(end===-1) return null; baseStr = str.slice(i+1,end-1); i = end; }
+    else { let j=i; while(j<str.length && /[0-9]/.test(str[j])) j++; if(j===i) return null; baseStr = str.slice(i,j); i=j; }
+    if(str[i] !== '(') return null;
+    const end = matchBalanced(str, i);
+    if(end === -1 || end !== str.length) return null;
+    const argStr = str.slice(i+1, end-1);
+    const base = evalExpr(baseStr, depth+1);
+    const arg = evalExpr(argStr, depth+1);
+    return evalLog(base, arg);
+  }
+
+  const m = str.match(/^(\d*)(√|∛|∜)(.+)$/);
+  if(m){
+    let index = 2;
+    if(m[2]==='∛') index = 3;
+    else if(m[2]==='∜') index = 4;
+    else if(m[1]!=='') index = parseInt(m[1],10);
+    if(index<2 || index>12) return null;
+    const inner = evalExpr(m[3], depth+1);
+    return inner ? integerRoot(inner, index) : null;
+  }
+
+  if(/^-?\d+\.?\d*$/.test(str)) return Frac.fromDecimalString(str);
+  return null;
+}
+
+/* ==== Дерево відповіді: живе, вкладене редагування дробів/степенів/коренів/логарифмів ==== */
+function newNumNode(value=''){ return { type:'num', value }; }
+function serializeChild(node){
+  const s = serializeNode(node);
+  return (node.type==='frac' || node.type==='pow' || node.type==='op') ? `(${s})` : s;
+}
+function serializeNode(node){
+  if(!node) return '';
+  if(node.type === 'num') return node.value || '';
+  if(node.type === 'op'){
+    return `${serializeNode(node.left)}${node.op}${serializeNode(node.right)}`;
+  }
+  if(node.type === 'frac'){
+    const num = serializeChild(node.num), den = serializeChild(node.den);
+    const core = den !== '' ? `${num}/${den}` : num;
+    return node.whole ? `${node.whole} ${core}` : core;
+  }
+  if(node.type === 'pow'){
+    const base = serializeChild(node.base);
+    return node.exp ? `${base}^${node.exp}` : base;
+  }
+  if(node.type === 'root'){
+    const radicand = serializeChild(node.radicand);
+    const idx = node.index || '';
+    if(idx===''||idx==='2') return `√${radicand}`;
+    if(idx==='3') return `∛${radicand}`;
+    if(idx==='4') return `∜${radicand}`;
+    return `${toSuperscript(idx)}√${radicand}`;
+  }
+  if(node.type === 'log'){
+    const arg = serializeNode(node.arg);
+    return `log_${node.base||'2'}(${arg})`;
+  }
+  return '';
+}
+function getAtPath(root, path){
+  if(path==='') return root;
+  return path.split('.').reduce((node,key)=> node ? node[key] : undefined, root);
+}
+function setAtPath(root, path, val){
+  const parts = path.split('.');
+  const last = parts.pop();
+  const parent = parts.length ? parts.reduce((node,key)=>node[key], root) : root;
+  parent[last] = val;
+}
+function fieldPath(nodePath, field){ return nodePath==='' ? field : `${nodePath}.${field}`; }
+function upgradeNode(root, nodePath, kind){
+  const current = nodePath==='' ? root : getAtPath(root, nodePath);
+  const currentVal = (current && current.value) || '';
+  let newNode;
+  if(kind==='frac') newNode = { type:'frac', whole:'', num:newNumNode(currentVal), den:newNumNode('') };
+  else if(kind==='pow') newNode = { type:'pow', base:newNumNode(currentVal), exp:'' };
+  else if(kind==='root') newNode = { type:'root', index:'', radicand:newNumNode(currentVal) };
+  else if(kind==='log') newNode = { type:'log', base:'', arg:newNumNode(currentVal) };
+  else return root;
+  if(nodePath==='') return newNode;
+  setAtPath(root, nodePath, newNode);
+  return root;
+}
+function combineNode(root, nodePath, op){
+  const current = nodePath==='' ? root : getAtPath(root, nodePath);
+  const newNode = { type:'op', op, left: current, right: newNumNode('') };
+  if(nodePath==='') return newNode;
+  setAtPath(root, nodePath, newNode);
+  return root;
+}
+function escAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function combineButtonsHTML(nodePath){
+  return `<div class="an-combine-group">
+    <button type="button" class="an-combine" data-node="${nodePath}" data-op="+">+</button>
+    <button type="button" class="an-combine" data-node="${nodePath}" data-op="-">−</button>
+    <button type="button" class="an-combine" data-node="${nodePath}" data-op="*">×</button>
+    <button type="button" class="an-combine" data-node="${nodePath}" data-op="/">:</button>
+  </div>`;
+}
+function renderAnswerNode(node, nodePath, showTools){
+  if(node.type === 'num'){
+    const vPath = fieldPath(nodePath, 'value');
+    const isRoot = nodePath === '';
+    const mini = showTools ? `
+      <span class="an-mini-group">
+        <button type="button" class="an-mini" data-node="${nodePath}" data-upgrade="frac">a/b</button>
+        <button type="button" class="an-mini" data-node="${nodePath}" data-upgrade="pow">xⁿ</button>
+        <button type="button" class="an-mini" data-node="${nodePath}" data-upgrade="root">√</button>
+        <button type="button" class="an-mini" data-node="${nodePath}" data-upgrade="log">log</button>
+      </span>` : '';
+    const combine = showTools ? combineButtonsHTML(nodePath) : '';
+    return `<span class="an-with-combine"><span class="an-leaf">
+      <input type="text" class="an-input ${isRoot?'an-root-input':''}" data-path="${vPath}" value="${escAttr(node.value)}" placeholder="${isRoot?'відповідь':''}" autocomplete="off">${mini}</span>${combine}</span>`;
+  }
+  if(node.type === 'op'){
+    return `<span class="an-op-wrap">
+      ${renderAnswerNode(node.left, fieldPath(nodePath,'left'), showTools)}
+      <span class="an-op-symbol">${node.op==='*'?'×':(node.op==='/'?':':node.op)}</span>
+      ${renderAnswerNode(node.right, fieldPath(nodePath,'right'), showTools)}
+    </span>`;
+  }
+  if(node.type === 'frac'){
+    return `<span class="an-frac">
+      <input type="text" class="an-input an-whole" data-path="${fieldPath(nodePath,'whole')}" value="${escAttr(node.whole||'')}" placeholder="ціле" autocomplete="off">
+      <span class="an-frac-stack">
+        <span class="an-frac-num">${renderAnswerNode(node.num, fieldPath(nodePath,'num'), showTools)}</span>
+        <span class="an-frac-bar"></span>
+        <span class="an-frac-den">${renderAnswerNode(node.den, fieldPath(nodePath,'den'), showTools)}</span>
+      </span>
+    </span>`;
+  }
+  if(node.type === 'pow'){
+    return `<span class="an-pow">${renderAnswerNode(node.base, fieldPath(nodePath,'base'), showTools)}<sup class="an-exp"><input type="text" class="an-input an-exp-input" data-path="${fieldPath(nodePath,'exp')}" value="${escAttr(node.exp||'')}" placeholder="n" autocomplete="off"></sup></span>`;
+  }
+  if(node.type === 'root'){
+    return `<span class="an-root">
+      <input type="text" class="an-input an-index" data-path="${fieldPath(nodePath,'index')}" value="${escAttr(node.index||'')}" placeholder="2" autocomplete="off">
+      <span class="root-sym">√</span>
+      <span class="an-radicand">${renderAnswerNode(node.radicand, fieldPath(nodePath,'radicand'), showTools)}</span>
+    </span>`;
+  }
+  if(node.type === 'log'){
+    return `<span class="an-log">log<sub><input type="text" class="an-input an-logbase" data-path="${fieldPath(nodePath,'base')}" value="${escAttr(node.base||'')}" placeholder="2" autocomplete="off"></sub>(<span class="an-logarg">${renderAnswerNode(node.arg, fieldPath(nodePath,'arg'), showTools)}</span>)</span>`;
+  }
+  return '';
+}
+function focusHintFor(nodePath, kind){
+  if(kind==='frac') return fieldPath(nodePath,'den')+'.value';
+  if(kind==='pow') return fieldPath(nodePath,'exp');
+  if(kind==='root') return fieldPath(nodePath,'index');
+  if(kind==='log') return fieldPath(nodePath,'base');
+  return null;
+}
+function rerenderAnswerTree(container, showTools, onEnter, focusPath){
+  container.innerHTML = renderAnswerNode(state.answerTree, '', showTools);
+  wireAnswerTree(container, showTools, onEnter);
+  const target = focusPath ? container.querySelector(`[data-path="${focusPath}"]`) : container.querySelector('.an-input');
+  if(target) target.focus();
+}
+let __measureCanvas = null;
+function measureTextWidth(text, font){
+  if(!__measureCanvas) __measureCanvas = document.createElement('canvas');
+  const ctx = __measureCanvas.getContext('2d');
+  ctx.font = font;
+  return ctx.measureText(text).width;
+}
+function autosizeInput(inp){
+  const cs = getComputedStyle(inp);
+  const font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const text = (inp.value && inp.value.length) ? inp.value : (inp.placeholder || '0');
+  const w = measureTextWidth(text, font);
+  const padL = parseFloat(cs.paddingLeft)||0, padR = parseFloat(cs.paddingRight)||0;
+  const borders = 2 * (parseFloat(cs.borderLeftWidth)||0);
+  inp.style.width = Math.ceil(w + padL + padR + borders + 8) + 'px';
+}
+function wireAnswerTree(container, showTools, onEnter){
+  container.querySelectorAll('.an-input').forEach(inp=>{
+    autosizeInput(inp);
+    inp.oninput = ()=>{ setAtPath(state.answerTree, inp.dataset.path, inp.value); autosizeInput(inp); };
+    inp.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); onEnter(); } });
+  });
+  if(!showTools) return;
+  // Клік по кнопці інакше забирає фокус з поля ще до спрацювання click —
+  // а через це кнопка (видима лише при фокусі) встигає зникнути й клік губиться.
+  container.querySelectorAll('.an-mini, .an-combine').forEach(btn=>{
+    btn.addEventListener('mousedown', (e)=> e.preventDefault());
+  });
+  container.querySelectorAll('.an-mini[data-upgrade]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const nodePath = btn.dataset.node, kind = btn.dataset.upgrade;
+      state.answerTree = upgradeNode(state.answerTree, nodePath, kind);
+      rerenderAnswerTree(container, showTools, onEnter, focusHintFor(nodePath, kind));
+    };
+  });
+  container.querySelectorAll('.an-combine[data-node]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const nodePath = btn.dataset.node, op = btn.dataset.op;
+      state.answerTree = combineNode(state.answerTree, nodePath, op);
+      rerenderAnswerTree(container, showTools, onEnter, fieldPath(fieldPath(nodePath,'right'),'value'));
+    };
+  });
+}
+
+function parseUserAnswer(raw){
+  if(raw==null) return null;
+  let str = String(raw).trim().replace(/\s+/g,' ');
+  if(str==='') return null;
+  str = str.replace(',', '.');
+  // мішане число "W N/D" — окремий запис (пробіл між цілою і дробовою частиною)
+  const m = str.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+  if(m){
+    const whole = parseInt(m[1],10);
+    const sign = (whole<0 || str.startsWith('-')) ? -1 : 1;
+    const n = parseInt(m[2],10), d = parseInt(m[3],10);
+    if(d===0) return null;
+    return new Frac(sign*(Math.abs(whole)*d + n), d);
+  }
+  // усе інше (дроби, степені, корені — і будь-як вкладені одне в одне)
+  return evalExpr(str);
+}
+
+function buildExpression(numOps, domain, leafGen, opsPool=['+','-','*','/']){
+  const MAX_TRIES = 500;
+  const maxD = domain==='fraction' ? 2000 : 100000;
+  const maxN = domain==='fraction' ? 200000 : 5000000;
+  function makeLeaf(){
+    const g = leafGen();
+    if(g instanceof Frac) return {leaf:true, value:g};
+    return {leaf:true, value:g.value, display:g.display};
+  }
+  function tryBuild(size){
+    if(size===1){ const leaf = makeLeaf(); return {node:leaf, value:leaf.value}; }
+    const k = randInt(1,size-1);
+    const left = tryBuild(k), right = tryBuild(size-k);
+    if(!left||!right) return null;
+    const op = choice(opsPool);
+    let val;
+    if(op==='+') val = left.value.add(right.value);
+    else if(op==='-') val = left.value.sub(right.value);
+    else if(op==='*') val = left.value.mul(right.value);
+    else { if(right.value.n===0) return null; val = left.value.div(right.value); if(!val) return null; }
+    if(!val) return null;
+    if(domain!=='fraction'){
+      if(op==='/' && !val.isInt()) return null;
+      if(domain==='natural' && val.isNeg()) return null;
+    }
+    if(Math.abs(val.n) > maxN || val.d > maxD) return null;
+    return {node:{leaf:false, op, left:left.node, right:right.node}, value:val};
+  }
+  for(let i=0;i<MAX_TRIES;i++){ const r = tryBuild(numOps+1); if(r) return r; }
+  return null;
+}
+function precedence(op){ return (op==='+'||op==='-') ? 1 : 2; }
+function opSymbol(op){ return op==='*' ? '×' : op==='/' ? ':' : op; }
+function renderNode(node, domain, parentOp=null, side=null){
+  if(node.leaf){
+    let s = node.display || node.value.toString();
+    if(node.value.isNeg() && parentOp) s = `(${s})`;
+    return s;
+  }
+  const prec = precedence(node.op);
+  let needParen = false;
+  if(parentOp){
+    const pp = precedence(parentOp);
+    if(prec < pp) needParen = true;
+    else if(prec===pp && side==='R' && (parentOp==='-'||parentOp==='/')) needParen = true;
+  }
+  const l = renderNode(node.left, domain, node.op, 'L');
+  const r = renderNode(node.right, domain, node.op, 'R');
+  const s = `${l} ${opSymbol(node.op)} ${r}`;
+  return needParen ? `(${s})` : s;
+}
+
+/* =========================================================
+   ГЕНЕРАТОРИ ЗАВДАНЬ — інстанції створюються щоразу заново,
+   комбінаторика практично необмежена (лімітів на кількість немає)
+   ========================================================= */
+function opsCountForLevel(level){ if(level===1) return 2; if(level===2) return randInt(3,4); return randInt(5,10); }
+function fmtIntOperand(v){ return v<0 ? `(${v})` : String(v); }
+function intLeaf(range, minAbs=1){ let v = randInt(-range,range); if(Math.abs(v)<minAbs) v = choice([minAbs,-minAbs]); return v; }
+function randNiceDecimal(places, maxWhole){ const scale = Math.pow(10,places); const n = randInt(0, maxWhole*scale); return new Frac(n, scale); }
+function properFrac(maxDen){ const d = randInt(2,maxDen); const n = randInt(1,d-1); return F(n,d); }
+function mixedFracVal(maxWhole, maxDen){
+  const whole = randInt(1, maxWhole);
+  const d = randInt(2, maxDen);
+  const n = randInt(1, d-1);
+  return { text:`${whole} ${n}/${d}`, val: F(whole*d+n, d) };
+}
+function powVal(base, exp){
+  if(exp>=0){ let n=1; for(let i=0;i<exp;i++) n*=base; return F(n); }
+  let n=1; for(let i=0;i<-exp;i++) n*=base; return F(1,n);
+}
+
+/* Двочленний радикал (A + B√n)/D — для завдань на позбавлення від ірраціональності */
+function normalizeRadical({A,B,n,D}){
+  if(D<0){ A=-A; B=-B; D=-D; }
+  const g = gcd(gcd(Math.abs(A), Math.abs(B)), D) || 1;
+  return { A:A/g, B:B/g, n, D:D/g };
+}
+function radicalEquals(a,b){
+  const na=normalizeRadical(a), nb=normalizeRadical(b);
+  return na.A===nb.A && na.B===nb.B && na.n===nb.n && na.D===nb.D;
+}
+function radicalToString({A,B,n,D}){
+  const bTerm = (Math.abs(B)===1 ? '' : String(Math.abs(B))) + '√' + n;
+  const numStr = A===0 ? (B<0 ? `-${bTerm}` : bTerm) : `${A} ${B<0?'-':'+'} ${bTerm}`;
+  return D===1 ? numStr : `(${numStr})/${D}`;
+}
+function parseRadicalAnswer(raw){
+  if(raw==null) return null;
+  let str = String(raw).trim().replace(/\s+/g,'');
+  if(str==='') return null;
+  str = str.replace(',', '.');
+  let D = 1;
+  let m = str.match(/^(.+)\/(-?\d+)$/);
+  if(m){ str = m[1]; D = parseInt(m[2],10); if(D===0) return null; }
+  if(/^\(.*\)$/.test(str)) str = str.slice(1,-1);
+  let mm = str.match(/^(-?\d+)([+-])(\d*)√(\d+)$/);
+  if(mm){
+    const A = parseInt(mm[1],10);
+    const sign = mm[2]==='-' ? -1 : 1;
+    const Bc = mm[3]==='' ? 1 : parseInt(mm[3],10);
+    const n = parseInt(mm[4],10);
+    return normalizeRadical({A, B: sign*Bc, n, D});
+  }
+  mm = str.match(/^(-?\d*)√(\d+)$/);
+  if(mm){
+    let Bstr = mm[1], B;
+    if(Bstr===''||Bstr==='+') B=1; else if(Bstr==='-') B=-1; else B=parseInt(Bstr,10);
+    const n = parseInt(mm[2],10);
+    return normalizeRadical({A:0, B, n, D});
+  }
+  return null;
+}
+
+function parseLogAnswer(raw){
+  if(raw==null) return null;
+  let str = String(raw).trim().replace(/\s+/g,'');
+  if(str==='') return null;
+  const m = str.match(/^log_(\d+)\((-?\d+)\)$/);
+  if(!m) return null;
+  const base = parseInt(m[1],10), arg = parseInt(m[2],10);
+  if(base<2 || arg<=0) return null;
+  return { base, arg };
+}
+function logAnswerEquals(a,b){ return a.base===b.base && a.arg===b.arg; }
+
+const GEN = {
+  natMulTable(sel){ const pool = (sel&&sel.length)?sel:[1,2,3,4,5,6,7,8,9,10]; const a=choice(pool), b=randInt(1,10); return {text:`${a} × ${b}`, answer:F(a*b), domain:'int'}; },
+  natDivTable(sel){ const pool = (sel&&sel.length)?sel:[1,2,3,4,5,6,7,8,9,10]; const divisor=choice(pool), quotient=randInt(1,10); return {text:`${divisor*quotient} : ${divisor}`, answer:F(quotient), domain:'int'}; },
+  natMul(digitsA, digitsB){ const a=randDigitNumber(digitsA), b=randDigitNumber(digitsB); return {text:`${a} × ${b}`, answer:F(a*b), domain:'int'}; },
+  natDiv(divisorDigits, quotientDigits){ const divisor = divisorDigits===1 ? randInt(2,9) : randDigitNumber(divisorDigits); const quotient = randDigitNumber(quotientDigits); return {text:`${divisor*quotient} : ${divisor}`, answer:F(quotient), domain:'int'}; },
+  natAddSub(maxVal){ const op = choice(['+','-']); if(op==='+'){ const a=randInt(0,maxVal); const b=randInt(0,maxVal-a); return {text:`${a} + ${b}`, answer:F(a+b), domain:'int'}; } const a=randInt(0,maxVal); const b=randInt(0,a); return {text:`${a} - ${b}`, answer:F(a-b), domain:'int'}; },
+  natAddSubMulti(){ const digits=randInt(4,6); const op=choice(['+','-']); const a=randDigitNumber(digits); if(op==='+'){ const b=randDigitNumber(randInt(3,digits)); return {text:`${a} + ${b}`, answer:F(a+b), domain:'int'}; } const b=randInt(0,a); return {text:`${a} - ${b}`, answer:F(a-b), domain:'int'}; },
+  natGen(level){
+    const nops=opsCountForLevel(level);
+    if(level===1){
+      const res = buildExpression(nops,'natural', ()=>F(randInt(1,20))) || buildExpression(nops,'natural', ()=>F(randInt(1,9)));
+      return {text:renderNode(res.node,'natural'), answer:res.value, domain:'int'};
+    }
+    const pools = level===2 ? [[1,2,3],[1,2],[1]] : [[1,2,3,4],[1,2,3],[1,2],[1]];
+    let res = null;
+    for(const pool of pools){
+      res = buildExpression(nops,'natural', ()=>F(randDigitNumber(choice(pool))));
+      if(res) break;
+    }
+    if(!res) res = buildExpression(nops,'natural', ()=>F(randInt(1,9)));
+    return {text:renderNode(res.node,'natural'), answer:res.value, domain:'int'};
+  },
+
+  intMul(level){ const range = level===1?10:level===2?100:100000; const a=intLeaf(range), b=intLeaf(level===3?1000:range); return {text:`${fmtIntOperand(a)} × ${fmtIntOperand(b)}`, answer:F(a*b), domain:'int'}; },
+  intDiv(level){ const dRange=level===1?10:level===2?20:100; const qRange=level===1?10:level===2?100:1000; const divisor=intLeaf(dRange,2), quotient=intLeaf(qRange); const dividend=divisor*quotient; return {text:`${fmtIntOperand(dividend)} : ${fmtIntOperand(divisor)}`, answer:F(quotient), domain:'int'}; },
+  intAddSub(level){ const range=level===1?10:level===2?100:100000; const op=choice(['+','-']); const a=intLeaf(range), b=intLeaf(range); const val = op==='+' ? a+b : a-b; return {text:`${fmtIntOperand(a)} ${op} ${fmtIntOperand(b)}`, answer:F(val), domain:'int'}; },
+  intGen(level){ const nops=opsCountForLevel(level); const range = level===1?10:level===2?30:20; const res=buildExpression(nops,'integer',()=>F(intLeaf(range))); return {text:renderNode(res.node,'integer'), answer:res.value, domain:'int'}; },
+
+  decAddSub(level){ const places = level===1?1:level===2?2:3; const maxWhole = level===1?10:level===2?100:1000; const op=choice(['+','-']); let a=randNiceDecimal(places,maxWhole), b=randNiceDecimal(places,maxWhole); if(op==='-' && a.toDecimal()<b.toDecimal()) [a,b]=[b,a]; const val = op==='+' ? a.add(b) : a.sub(b); return {text:`${a.toDecimalString()} ${op} ${b.toDecimalString()}`, answer:val, domain:'decimal'}; },
+  decMul(level){ const places = level===1?1:2; const maxWhole = level===1?9:level===2?20:100; const a=randNiceDecimal(places,maxWhole); let b; if(level===3){ b=randNiceDecimal(1,20);} else { b=F(level===1?randInt(2,9):randInt(2,99)); } const val=a.mul(b); return {text:`${a.toDecimalString()} × ${b.toDecimalString()}`, answer:val, domain:'decimal'}; },
+  decDiv(level){ const divisor = level===1?randInt(2,9):level===2?randInt(2,20):randInt(2,99); const places = level===1?1:2; const quotient = randNiceDecimal(places, level===1?9:level===2?50:200); const dividend = quotient.mul(F(divisor)); return {text:`${dividend.toDecimalString()} : ${divisor}`, answer:quotient, domain:'decimal'}; },
+
+  fracAddSub(level){ const maxDen = level===1?10:level===2?20:30; const op=choice(['+','-']); let a=properFrac(maxDen), b=properFrac(maxDen); if(op==='-' && a.toDecimal()<b.toDecimal()) [a,b]=[b,a]; const val = op==='+' ? a.add(b) : a.sub(b); return {text:`${a.n}/${a.d} ${op} ${b.n}/${b.d}`, answer:val, domain:'fraction'}; },
+  fracMul(level){ const maxDen = level===1?10:level===2?20:30; const a=properFrac(maxDen), b=properFrac(maxDen); return {text:`${a.n}/${a.d} × ${b.n}/${b.d}`, answer:a.mul(b), domain:'fraction'}; },
+  fracDiv(level){ const maxDen = level===1?10:level===2?20:30; const a=properFrac(maxDen), b=properFrac(maxDen); return {text:`${a.n}/${a.d} : ${b.n}/${b.d}`, answer:a.div(b), domain:'fraction'}; },
+  fracAddSubSameDenom(){
+    const d = randInt(2,20);
+    const op = choice(['+','-']);
+    let a = randInt(1,d-1), b = randInt(1,d-1);
+    if(op==='-' && a<b) [a,b]=[b,a];
+    const val = op==='+' ? F(a,d).add(F(b,d)) : F(a,d).sub(F(b,d));
+    return { text:`${a}/${d} ${op} ${b}/${d}`, answer:val, domain:'fraction' };
+  },
+  fracAddSubMixed(){
+    const op = choice(['+','-']);
+    let a = mixedFracVal(5,10), b = mixedFracVal(5,10);
+    if(op==='-' && a.val.toDecimal() < b.val.toDecimal()) [a,b] = [b,a];
+    const val = op==='+' ? a.val.add(b.val) : a.val.sub(b.val);
+    return { text:`${a.text} ${op} ${b.text}`, answer:val, domain:'fraction' };
+  },
+  fracMulMixed(){
+    const a = mixedFracVal(4,8), b = mixedFracVal(4,8);
+    return { text:`${a.text} × ${b.text}`, answer:a.val.mul(b.val), domain:'fraction' };
+  },
+  fracDivMixed(){
+    const a = mixedFracVal(4,8), b = mixedFracVal(4,8);
+    return { text:`${a.text} : ${b.text}`, answer:a.val.div(b.val), domain:'fraction' };
+  },
+
+  decToFrac(level){ const places = level===1?1:level===2?2:3; const maxWhole = level===1?9:level===2?9:20; const dec=randNiceDecimal(places,maxWhole); return {text:`${dec.toDecimalString()}`, answer:dec, domain:'fraction'}; },
+  fracToDec(level){ const NICE = {1:[2,4,5,10],2:[2,4,5,8,10,20,25,50],3:[2,4,5,8,10,16,20,25,40,50,100]}; const d=choice(NICE[level]); const n=randInt(1,d-1); const f=F(n,d); return {text:`${f.n}/${f.d}`, answer:f, domain:'decimal'}; },
+  mixedToImproper(level){ const maxDen = level===1?6:level===2?12:20; const maxWhole = level===1?5:level===2?9:15; let d,n; do{ d=randInt(2,maxDen); n=randInt(1,d-1);}while(gcd(n,d)!==1); const whole=randInt(1,maxWhole); const improper=F(whole*d+n,d); return {text:`${whole} ${n}/${d}`, answer:improper, domain:'fraction'}; },
+  improperToMixed(level){ const maxDen = level===1?6:level===2?12:20; let d,n; do{ d=randInt(2,maxDen); n=randInt(1,d-1);}while(gcd(n,d)!==1); const whole=randInt(1, level===1?5:level===2?9:15); const improperN = whole*d+n; return {text:`${improperN}/${d}`, answer:F(improperN,d), domain:'fraction', expectMixed:true}; },
+  simplifyFrac(level){ const maxDen = level===1?10:level===2?30:60; const base=properFrac(maxDen); const k=randInt(2, level===1?5:level===2?8:12); return {text:`${base.n*k}/${base.d*k}`, answer:base, domain:'fraction'}; },
+  fracGen(level){ const nops=opsCountForLevel(level); const res=buildExpression(nops,'fraction', ()=>{ if(Math.random()<0.5){ const d=choice([2,3,4,5,6,8,10]); const n=randInt(1,d-1); return F(n,d);} const dec=randNiceDecimal(1,12); return {value:dec, display:dec.toDecimalString()}; }); return {text:renderNode(res.node,'fraction'), answer:res.value, domain:'fraction'}; },
+
+  powBase(base, minExp, maxExp){ const n=randInt(minExp,maxExp); const val=powVal(base,n); return {text:`${base}^${n}`, answer:val, domain: val.isInt()?'int':'fraction'}; },
+  powRandBase(minBase,maxBase,minExp,maxExp){ const base=randInt(minBase,maxBase); const n=randInt(minExp,maxExp); const val=powVal(base,n); return {text:`${base}^${n}`, answer:val, domain: val.isInt()?'int':'fraction'}; },
+  powTen(){ const n=randInt(-3,4); const val=powVal(10,n); return {text:`10^${n}`, answer:val, domain: n<0 ? 'decimal' : 'int'}; },
+  powGen(level){
+    const mk = (text,val)=>({ text, answer:val, domain: val.isInt() ? 'int' : 'fraction' });
+    if(level===1){
+      const kind = choice(['prod','quot','pow','zero']);
+      const a = randInt(2,9);
+      if(kind==='prod'){ const m=randInt(1,4), n=randInt(1,4); return mk(`${a}^${m} × ${a}^${n}`, powVal(a,m+n)); }
+      if(kind==='quot'){ const m=randInt(2,6), n=randInt(1,m-1); return mk(`${a}^${m} : ${a}^${n}`, powVal(a,m-n)); }
+      if(kind==='pow'){ const m=randInt(1,3), n=randInt(1,3); const e=Math.min(m*n,8); return mk(`(${a}^${m})^${n}`, powVal(a,e)); }
+      const base = randInt(2,20); return mk(`${base}^0`, F(1));
+    }
+    if(level===2){
+      const kind = choice(['prod','quot','pow','common','neg','fracpow']);
+      const a = randInt(2,9), b=randInt(2,9);
+      if(kind==='prod'){ const m=randInt(2,6), n=randInt(2,6); return mk(`${a}^${m} × ${a}^${n}`, powVal(a,m+n)); }
+      if(kind==='quot'){ const m=randInt(3,8), n=randInt(1,m-1); return mk(`${a}^${m} : ${a}^${n}`, powVal(a,m-n)); }
+      if(kind==='pow'){ const m=randInt(2,4), n=randInt(2,3); const e=Math.min(m*n,10); return mk(`(${a}^${m})^${n}`, powVal(a,e)); }
+      if(kind==='common'){ const n=randInt(2,3); return mk(`${a}^${n} × ${b}^${n}`, powVal(a*b,n)); }
+      if(kind==='neg'){ const n=randInt(1,3); return mk(`${a}^-${n}`, powVal(a,-n)); }
+      const d=randInt(2,6), num=randInt(1,d-1), k=randInt(2,3);
+      return mk(`(${num}/${d})^${k}`, powVal(num,k).div(powVal(d,k)));
+    }
+    const kind = choice(['chain1','chain2','chain3','negcombo']);
+    const a = randInt(2,8);
+    if(kind==='chain1'){ const m=randInt(2,5), n=randInt(2,5), p=randInt(1,3); return mk(`(${a}^${m} × ${a}^${n}) : ${a}^${p}`, powVal(a, Math.min(m+n-p,9))); }
+    if(kind==='chain2'){ const m=randInt(2,3), n=randInt(2,3), p=randInt(1,2); return mk(`(${a}^${m})^${n} : ${a}^${p}`, powVal(a, Math.min(m*n-p,9))); }
+    if(kind==='chain3'){ const b=randInt(2,8); const n=randInt(2,3); const mExp=randInt(1,2); return mk(`${a}^${n} × ${b}^${n} × ${a}^${mExp}`, powVal(a*b,n).mul(powVal(a,mExp))); }
+    const n=randInt(1,3), m=randInt(1,3);
+    return mk(`${a}^-${n} × ${a}^${m}`, powVal(a, m-n));
+  },
+
+  sqrtInt(){ const r=randInt(2,20); return { text:`√${r*r}`, answer:F(r), domain:'int' }; },
+  sqrtFrac(){ const rn=randInt(1,9), rd=randInt(rn+1,12); return { text:`√(${rn*rn}/${rd*rd})`, answer:F(rn,rd), domain:'fraction' }; },
+  sqrtDec(){ const k=randInt(1,9); const val=F(k,10); const radicand=val.mul(val); return { text:`√${radicand.toDecimalString()}`, answer:val, domain:'decimal' }; },
+  rootCube(){ const base=randInt(2,9); const signed = Math.random()<0.35 ? -base : base; const radicand = Math.pow(signed,3); const t = radicand<0 ? `∛(${radicand})` : `∛${radicand}`; return { text:t, answer:F(signed), domain:'int' }; },
+  rootFour(){ const base=randInt(2,6); const radicand=Math.pow(base,4); return { text:`∜${radicand}`, answer:F(base), domain:'int' }; },
+  rootFive(){ const base=randInt(2,4); const signed = Math.random()<0.35 ? -base : base; const radicand=Math.pow(signed,5); const t = radicand<0 ? `⁵√(${radicand})` : `⁵√${radicand}`; return { text:t, answer:F(signed), domain:'int' }; },
+
+  rootGen(index, level){
+    const sym = index===2 ? '√' : '∛';
+    const splitPow = (c,n)=>{ const full=Math.pow(c,n); const cands=[2,3,4,5,6,c]; for(const s of cands){ if(s>=2 && s<full && full%s===0) return [s, full/s]; } return [c, full/c]; };
+    const tmplProduct = ()=>{ const c=randInt(2,6); const [a,b]=splitPow(c,index); return { text:`${sym}${a} × ${sym}${b}`, value:c }; };
+    const tmplQuotient = ()=>{ const c=randInt(2,6), k=randInt(2,4); const a=Math.pow(c,index)*k; return { text:`${sym}${a} : ${sym}${k}`, value:c }; };
+    const tmplPowerOfRoot = ()=>{ const c=randInt(2,10); return { text:`(${sym}${c})^${index}`, value:c }; };
+    const tmplCoeffPowerOfRoot = ()=>{ const k=randInt(2,5), a=randInt(2,12); return { text:`(${k}${sym}${a})^${index}`, value: Math.pow(k,index)*a }; };
+    const tmplCancel = ()=>{ const k=randInt(2,9), a=randInt(2,30); return { text:`${k}${sym}${a} : ${sym}${a}`, value:k }; };
+    const tmplRootOfOne = ()=>({ text:`${sym}1`, value:1 });
+    const tmplCoeffProduct = ()=>{ const c=randInt(2,6); const [a,b]=splitPow(c,index); const k=randInt(2,4), m=randInt(2,4); return { text:`${k}${sym}${a} × ${m}${sym}${b}`, value: k*m*c }; };
+
+    if(level===1){ const t=choice([tmplProduct,tmplQuotient,tmplPowerOfRoot]); const r=t(); return { text:r.text, answer:F(r.value), domain:'int' }; }
+    if(level===2){ const t=choice([tmplCoeffProduct,tmplCancel,tmplCoeffPowerOfRoot,tmplRootOfOne]); const r=t(); return { text:r.text, answer:F(r.value), domain:'int' }; }
+    const pool1=[tmplProduct,tmplQuotient,tmplPowerOfRoot,tmplCancel,tmplCoeffProduct];
+    const r1=choice(pool1)(), r2=choice(pool1)();
+    const op=choice(['+','-','×']);
+    const val = op==='+' ? r1.value+r2.value : op==='-' ? r1.value-r2.value : r1.value*r2.value;
+    return { text:`(${r1.text}) ${op} (${r2.text})`, answer:F(val), domain:'int' };
+  },
+
+  rationalizeDenom(level){
+    const SQFREE1 = [2,3,5,6,7,10,11,13,14,15,17,19,21,22,23,26,29,30];
+    const SQFREE2 = [2,3,5,6,7,10,11,13,14,15];
+    if(level===1){
+      const n = choice(SQFREE1);
+      const k = randInt(2,12);
+      const g = gcd(k,n);
+      const B = k/g, D = n/g;
+      return { text:`${k} / √${n}`, answer:{A:0,B,n,D}, domain:'radical2' };
+    }
+    const n = choice(SQFREE2);
+    const m = randInt(2,5);
+    const sign = choice([1,-1]);
+    const k = randInt(2,10);
+    const A = -sign*k*m, B = k, D = n-m*m;
+    const answer = normalizeRadical({A,B,n,D});
+    const denomStr = sign===1 ? `√${n} + ${m}` : `√${n} - ${m}`;
+    return { text:`${k} / (${denomStr})`, answer, domain:'radical2' };
+  },
+
+  logLeaf(){
+    const kind = choice(['plain','plain','plain','lg','ln']);
+    const m = randInt(1,6);
+    if(kind==='lg') return { value:F(m), display:`lg${Math.pow(10,m)}` };
+    if(kind==='ln') return { value:F(m), display:`ln(e^${m})` };
+    const a = randInt(2,9);
+    return { value:F(m), display:`log_${a}(${a}^${m})` };
+  },
+  logGen(level){
+    const kindPool = level===1 ? ['plain','plain','plain','lg','ln'] : ['plain','plain','plain','plain','lg'];
+    const kind = choice(kindPool);
+    if(kind==='lg'){ const m=randInt(1, level===1?4:level===2?5:6); return { text:`lg${Math.pow(10,m)}`, answer:F(m), domain:'int' }; }
+    if(kind==='ln'){ const m=randInt(1, level===1?4:6); return { text:`ln(e^${m})`, answer:F(m), domain:'int' }; }
+    const a = randInt(2,9);
+    if(level===1){ const m=randInt(1,5); return { text:`log_${a}(${a}^${m})`, answer:F(m), domain:'int' }; }
+    if(level===2){
+      const sub = choice(['powBase','rootArg']);
+      if(sub==='powBase'){ const k=randInt(2,4), m=randInt(1,8); return { text:`log_(${a}^${k})(${a}^${m})`, answer:F(m,k), domain:'fraction' }; }
+      const n=randInt(2,4), m=randInt(1,6); return { text:`log_${a}(${n}√(${a}^${m}))`, answer:F(m,n), domain:'fraction' };
+    }
+    const k=randInt(2,4), p=randInt(2,3), m=randInt(1,4);
+    const variant = choice(['combo','comboRoot']);
+    if(variant==='combo') return { text:`log_(${a}^${k})((${a}^${p})^${m})`, answer:F(p*m,k), domain:'fraction' };
+    const n=randInt(2,3);
+    return { text:`log_(${a}^${k})(${n}√((${a}^${p})^${m}))`, answer:F(p*m, k*n), domain:'fraction' };
+  },
+  logPropGen(level){
+    if(level===1){
+      const nops = randInt(1,2);
+      const res = buildExpression(nops, 'fraction', GEN.logLeaf);
+      return { text: renderNode(res.node,'fraction'), answer: res.value, domain:'fraction' };
+    }
+    const useProperty = Math.random()<0.65;
+    if(useProperty){
+      const variant = choice(['add','sub','powrule','identity','logSelf','logOne','powerRule2','baseRule2']);
+      if(variant==='add'){ const a=randInt(2,9), x=randInt(2,9), y=randInt(2,9); return { text:`log_${a}(${x}) + log_${a}(${y})`, answer:{base:a,arg:x*y}, domain:'logans' }; }
+      if(variant==='sub'){ const a=randInt(2,9), y=randInt(2,6), x=y*randInt(2,5); return { text:`log_${a}(${x}) - log_${a}(${y})`, answer:{base:a,arg:x/y}, domain:'logans' }; }
+      if(variant==='powrule'){ const a=randInt(2,9), x=randInt(2,9), k=randInt(2,4); return { text:`${k}·log_${a}(${x})`, answer:{base:a,arg:Math.pow(x,k)}, domain:'logans' }; }
+      if(variant==='identity'){ const a=randInt(2,9), b=randInt(2,50); return { text:`${a}^(log_${a}(${b}))`, answer:F(b), domain:'int' }; }
+      if(variant==='logSelf'){ const a=randInt(2,20); return { text:`log_${a}(${a})`, answer:F(1), domain:'int' }; }
+      if(variant==='logOne'){ const a=randInt(2,20); return { text:`log_${a}(1)`, answer:F(0), domain:'int' }; }
+      if(variant==='powerRule2'){ const a=randInt(2,6), p=randInt(2,3), n=randInt(1,3); const b=Math.pow(a,p); return { text:`log_${a}(${b}^${n})`, answer:F(p*n), domain:'int' }; }
+      const a=randInt(2,6), k=randInt(2,4), m=randInt(1,6); return { text:`log_(${a}^${k})(${Math.pow(a,m)})`, answer:F(m,k), domain:'fraction' };
+    }
+    const nops = level===2 ? randInt(2,4) : randInt(3,6);
+    const res = buildExpression(nops, 'fraction', GEN.logLeaf);
+    return { text: renderNode(res.node,'fraction'), answer: res.value, domain:'fraction' };
+  },
+};
+
+/* =========================================================
+   КОНФІГУРАЦІЯ РОЗДІЛІВ
+   ========================================================= */
+function levelSubs(idPrefix, genFn, group, notes){
+  return [1,2,3].map((l,i)=>({
+    id:`${idPrefix}-${l}`,
+    title: group ? `${group} — рівень ${l}` : (notes ? `${notes[i]}` : `Рівень ${l}`),
+    group: group || null,
+    level: l,
+    note: notes ? notes[i] : null,
+    gen: ()=>genFn(l)
+  }));
+}
+
+const CONFIG = [
+  { id:'nat', title:'Натуральні числа', sections:[
+    { id:'nat-addsub', title:'Додавання та віднімання', subs:[
+      { id:'nat-as-10', title:'У межах 10', gen:()=>GEN.natAddSub(10) },
+      { id:'nat-as-100', title:'У межах 100', gen:()=>GEN.natAddSub(100) },
+      { id:'nat-as-1000', title:'У межах 1000', gen:()=>GEN.natAddSub(1000) },
+      { id:'nat-as-multi', title:'Багатоцифрові числа', gen:()=>GEN.natAddSubMulti() },
+    ]},
+    { id:'nat-mul', title:'Множення', subs:[
+      { id:'nat-mul-table', title:'Таблиця множення', digitSelect:true, gen:(sel)=>GEN.natMulTable(sel) },
+      { id:'nat-mul-1d', title:'На одноцифрове число', gen:()=>GEN.natMul(randInt(2,3),1) },
+      { id:'nat-mul-2d', title:'На двоцифрове число', gen:()=>GEN.natMul(randInt(2,4),2) },
+      { id:'nat-mul-3d', title:'На трицифрове число', gen:()=>GEN.natMul(randInt(3,5),3) },
+      { id:'nat-mul-multi', title:'Багатоцифрове множення', gen:()=>GEN.natMul(randInt(4,6),randInt(4,6)) },
+    ]},
+    { id:'nat-div', title:'Ділення', subs:[
+      { id:'nat-div-table', title:'Таблиця ділення', digitSelect:true, gen:(sel)=>GEN.natDivTable(sel) },
+      { id:'nat-div-1d', title:'На одноцифрове число', gen:()=>GEN.natDiv(1,randInt(2,3)) },
+      { id:'nat-div-2d', title:'На двоцифрове число', gen:()=>GEN.natDiv(2,randInt(2,3)) },
+      { id:'nat-div-3d', title:'На трицифрове число', gen:()=>GEN.natDiv(3,randInt(2,3)) },
+      { id:'nat-div-multi', title:'Багатоцифрове ділення', gen:()=>GEN.natDiv(randInt(3,4),randInt(3,4)) },
+    ]},
+  ]},
+  { id:'int', title:'Цілі числа', sections:[
+    { id:'int-addsub', title:'Додавання та віднімання', subs: levelSubs('int-as', GEN.intAddSub, null, ['до 10','до 100','великі числа']) },
+    { id:'int-mul', title:'Множення', subs: levelSubs('int-mul', GEN.intMul, null, ['до 10','до 100','великі числа']) },
+    { id:'int-div', title:'Ділення', subs: levelSubs('int-div', GEN.intDiv, null, ['до 10','до 100','великі числа']) },
+  ]},
+  { id:'frac', title:'Дроби', sections:[
+    { id:'frac-dec', title:'Десяткові дроби', subs:[
+      ...levelSubs('frac-dec-as', GEN.decAddSub, 'Додавання/віднімання'),
+      ...levelSubs('frac-dec-mul', GEN.decMul, 'Множення'),
+      ...levelSubs('frac-dec-div', GEN.decDiv, 'Ділення'),
+    ]},
+    { id:'frac-common', title:'Звичайні дроби', subs:[
+      ...levelSubs('frac-com-as', GEN.fracAddSub, 'Додавання/віднімання'),
+      { id:'frac-com-as-samedenom', title:'Додавання/віднімання — однакові знаменники', gen:()=>GEN.fracAddSubSameDenom() },
+      { id:'frac-com-as-mixed', title:'Додавання/віднімання — мішані дроби', gen:()=>GEN.fracAddSubMixed() },
+      ...levelSubs('frac-com-mul', GEN.fracMul, 'Множення'),
+      { id:'frac-com-mul-mixed', title:'Множення — мішані дроби', gen:()=>GEN.fracMulMixed() },
+      ...levelSubs('frac-com-div', GEN.fracDiv, 'Ділення'),
+      { id:'frac-com-div-mixed', title:'Ділення — мішані дроби', gen:()=>GEN.fracDivMixed() },
+    ]},
+    { id:'frac-convert', title:'Переведення дробів', subs:[
+      ...levelSubs('frac-cv-df', GEN.decToFrac, 'Десятковий → звичайний'),
+      ...levelSubs('frac-cv-fd', GEN.fracToDec, 'Звичайний → десятковий'),
+      ...levelSubs('frac-cv-mi', GEN.mixedToImproper, 'Мішаний → неправильний'),
+      ...levelSubs('frac-cv-im', GEN.improperToMixed, 'Неправильний → мішаний'),
+    ]},
+    { id:'frac-simplify', title:'Скорочення дробів', subs: levelSubs('frac-simpl', GEN.simplifyFrac) },
+  ]},
+  { id:'pow', title:'Степеневі вирази', sections:[
+    { id:'pow-basic', title:'Обчислення степеня', subs:[
+      { id:'pow-base2', title:'Степені числа 2', gen:()=>GEN.powBase(2,1,10) },
+      { id:'pow-base3', title:'Степені числа 3', gen:()=>GEN.powBase(3,1,5) },
+      { id:'pow-base49', title:'Степені та куби чисел 4–9', gen:()=>GEN.powRandBase(4,9,2,3) },
+      { id:'pow-sq1025', title:'Квадрати чисел 10–25', gen:()=>GEN.powRandBase(10,25,2,2) },
+      { id:'pow-ten', title:'Степені числа 10 (з від\u2019ємними)', gen:()=>GEN.powTen() },
+    ]},
+  ]},
+  { id:'irr', title:'Ірраціональні вирази', sections:[
+    { id:'irr-sqrt', title:'Обчислення кореня квадратного', subs:[
+      { id:'irr-sqrt-int', title:'З цілих чисел', gen:()=>GEN.sqrtInt() },
+      { id:'irr-sqrt-frac', title:'З дробів', gen:()=>GEN.sqrtFrac() },
+      { id:'irr-sqrt-dec', title:'З десяткових дробів', gen:()=>GEN.sqrtDec() },
+    ]},
+    { id:'irr-higher', title:'Обчислення коренів вищих степенів', subs:[
+      { id:'irr-cube', title:'Кубічний корінь (∛)', gen:()=>GEN.rootCube() },
+      { id:'irr-four', title:'Корінь 4-го степеня (∜)', gen:()=>GEN.rootFour() },
+      { id:'irr-five', title:'Корінь 5-го степеня (⁵√)', gen:()=>GEN.rootFive() },
+    ]},
+    { id:'irr-gen-sqrt', title:'Властивості кореня квадратного', subs: levelSubs('irr-gen-sqrt', (l)=>GEN.rootGen(2,l), null, ['основні властивості','з коефіцієнтами','комбіновані вирази']) },
+    { id:'irr-gen-cbrt', title:'Властивості коренів вищих степенів', subs: levelSubs('irr-gen-cbrt', (l)=>GEN.rootGen(3,l), null, ['основні властивості','з коефіцієнтами','комбіновані вирази']) },
+    { id:'irr-rationalize', title:'Позбавлення від ірраціональності в знаменнику', subs:[
+      { id:'irr-rat-1', title:'У знаменнику корінь числа', gen:()=>GEN.rationalizeDenom(1) },
+      { id:'irr-rat-2', title:'У знаменнику корінь ± число', gen:()=>GEN.rationalizeDenom(2) },
+    ]},
+  ]},
+  { id:'log', title:'Логарифмічні вирази', sections:[
+    { id:'log-basic', title:'Обчислення логарифмів', subs: levelSubs('log-basic', GEN.logGen, null, ['проста основа, а також lg і ln','степінь в основі або корінь в аргументі','степінь і в основі, і в аргументі — складніші приклади']) },
+  ]},
+];
+
+/* Генерація прикладів — окрема виділена тема (комбіновані вирази з рівнями складності) */
+const GEN_CATEGORY = {
+  id:'gen', title:'Генерація прикладів', special:'orange', sections:[
+    { id:'gen-nat', title:'Натуральні числа', subs: levelSubs('nat-gen', GEN.natGen, null, ['2 дії','3–4 дії, дужки','5–10 дій']) },
+    { id:'gen-int', title:'Цілі числа', subs: levelSubs('int-gen', GEN.intGen, null, ['2 дії','3–4 дії, дужки','5–10 дій']) },
+    { id:'gen-frac', title:'Дроби', subs: levelSubs('frac-gen', GEN.fracGen, null, ['2 дії','3–4 дії, дужки','5–10 дій, дроби+десяткові']) },
+    { id:'gen-pow', title:'Степеневі вирази', subs: levelSubs('pow-gen', GEN.powGen, null, ['основні властивості','степінь 0, від\u2019ємний, дріб у степені','комбіновані вирази']) },
+    { id:'gen-irr', title:'Ірраціональні вирази', subs:[
+      ...levelSubs('irr-gen-sqrt2', (l)=>GEN.rootGen(2,l), 'Корінь квадратний'),
+      ...levelSubs('irr-gen-cbrt2', (l)=>GEN.rootGen(3,l), 'Корені вищих степенів'),
+    ]},
+    { id:'gen-log', title:'Логарифмічні вирази', subs: levelSubs('log-gen', GEN.logPropGen) },
+  ]
+};
+
+const ALL_CATS = [...CONFIG, GEN_CATEGORY];
+
+/* =========================================================
+   СТАН ТА ІНТЕРФЕЙС
+   ========================================================= */
+let state = {
+  currentLeaf: null,
+  selectedDigits: [1,2,3,4,5,6,7,8,9,10],
+  quiz: null,
+  totals: { solved:0, correct:0, generated:0 },
+  pool: null,
+  multiMode: new Set(),
+  multiSelection: {},
+};
+
+function starsText(level){
+  return [1,2,3].map(s=> s<=level ? '★' : '☆').join('');
+}
+function titleWithStars(leaf){
+  return leaf.level ? `${starsText(leaf.level)} ${leaf.title}` : leaf.title;
+}
+function findLeaf(id){
+  for(const cat of ALL_CATS) for(const sec of cat.sections) for(const sub of sec.subs) if(sub.id===id) return {leaf:sub, sec, cat};
+  return null;
+}
+
+function hintForDomain(domain, expectMixed, catId){
+  const powHint = (catId==='pow' || catId==='irr') ? ' · або запис бази^степінь, напр. 5^5' : '';
+  if(domain==='radical2') return 'запис (A+B√n)/D, напр. (1 + 2√5)/3 — зручно набрати через ⌨';
+  if(domain==='logans') return 'запис log_основа(аргумент), напр. log_2(15) — зручно набрати через ⌨ (кнопка log)';
+  if(domain==='int') return 'ціле число (можна від\u2019ємне)' + powHint;
+  if(domain==='decimal') return 'число, можна з комою (напр. 3,5)' + powHint;
+  if(expectMixed) return 'дріб: звичайний (3/4), мішаний (2 1/3) або цілий';
+  return 'дріб (напр. 3/4) або ціле число' + powHint;
+}
+function correctDisplay(problem){
+  if(problem.domain==='radical2') return radicalToString(problem.answer);
+  if(problem.domain==='logans') return `log_${problem.answer.base}(${problem.answer.arg})`;
+  if(problem.domain==='int') return problem.answer.toString();
+  if(problem.domain==='decimal') return problem.answer.toDecimalString();
+  if(problem.expectMixed) return problem.answer.toMixedString();
+  return problem.answer.toString();
+}
+function fracToHTML(str){
+  return String(str).replace(/(-?\d+)\/(\d+)/g, (m,n,d)=>`<span class="frac"><span class="num">${n}</span><span class="den">${d}</span></span>`);
+}
+function powToHTML(str){
+  let s = String(str);
+  s = s.replace(/(\d+)\^(-?\d+)/g, (m,b,e)=>`${b}<sup>${e}</sup>`);
+  s = s.replace(/\)\^(-?\d+)/g, (m,e)=>`)<sup>${e}</sup>`);
+  s = s.replace(/\be\^(-?\d+)/g, (m,e)=>`e<sup>${e}</sup>`);
+  return s;
+}
+function logToHTML(str){
+  str = String(str);
+  let out = '', i = 0;
+  while(i < str.length){
+    if(str.startsWith('log_', i)){
+      out += 'log';
+      i += 4;
+      let base;
+      if(str[i] === '('){
+        let depth=0, j=i;
+        for(; j<str.length; j++){
+          if(str[j]==='(') depth++;
+          else if(str[j]===')'){ depth--; if(depth===0){ j++; break; } }
+        }
+        base = str.slice(i+1, j-1);
+        i = j;
+      } else {
+        let j=i;
+        while(j<str.length && /[0-9]/.test(str[j])) j++;
+        base = str.slice(i,j);
+        i = j;
+      }
+      out += `<sub>${base}</sub>`;
+    } else {
+      out += str[i]; i++;
+    }
+  }
+  return out;
+}
+function formatMath(str){ return powToHTML(fracToHTML(rootToHTML(logToHTML(str)))); }
+const SUP_DIGIT_MAP = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
+const DIGIT_SUP_MAP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+function toSuperscript(str){ return String(str).split('').map(c=>DIGIT_SUP_MAP[c]||c).join(''); }
+function rootToHTML(str){
+  str = String(str);
+  let out = '', i = 0;
+  while(i < str.length){
+    const coeffMatch = str.slice(i).match(/^\d+/);
+    const coeffEnd = coeffMatch ? i + coeffMatch[0].length : i;
+    let k = coeffEnd, supDigits = '';
+    while(k < str.length && SUP_DIGIT_MAP[str[k]] !== undefined){ supDigits += SUP_DIGIT_MAP[str[k]]; k++; }
+    if(k < str.length && (str[k]==='√' || str[k]==='∛' || str[k]==='∜')){
+      const sym = str[k];
+      const coeff = coeffMatch ? coeffMatch[0] : '';
+      k++;
+      let content;
+      if(str[k] === '('){
+        let depth=0, m=k;
+        for(; m<str.length; m++){ if(str[m]==='(') depth++; else if(str[m]===')'){ depth--; if(depth===0){ m++; break; } } }
+        content = str.slice(k+1, m-1);
+        k = m;
+      } else {
+        let m=k;
+        while(m<str.length && /[0-9]/.test(str[m])) m++;
+        content = str.slice(k,m);
+        k = m;
+      }
+      out += coeff;
+      out += `<span class="root-wrap">${supDigits ? `<sup class="root-idx">${supDigits}</sup>` : ''}<span class="root-sqrt">${sym}</span><span class="root-radicand">${content}</span></span>`;
+      i = k;
+    } else {
+      out += str[i]; i++;
+    }
+  }
+  return out;
+}
+
+function openTabUI(tab){
+  tab.classList.add('open');
+  positionTabPanel(tab);
+  const backdrop = document.getElementById('tabBackdrop');
+  const tabbar = document.getElementById('tabbar');
+  if(backdrop) backdrop.classList.add('show');
+  if(tabbar) tabbar.classList.add('has-open');
+}
+function closeAllTabsUI(){
+  document.querySelectorAll('.tab.open').forEach(t=>t.classList.remove('open'));
+  const backdrop = document.getElementById('tabBackdrop');
+  const tabbar = document.getElementById('tabbar');
+  if(backdrop) backdrop.classList.remove('show');
+  if(tabbar) tabbar.classList.remove('has-open');
+}
+
+function positionTabPanel(tab){
+  const panel = tab.querySelector('.tab-panel');
+  const tabbar = document.getElementById('tabbar');
+  if(!panel || !tabbar) return;
+  const tabbarRect = tabbar.getBoundingClientRect();
+  const tabRect = tab.getBoundingClientRect();
+  const panelWidth = Math.min(340, tabbarRect.width - 4);
+  const tabLeftInBar = tabRect.left - tabbarRect.left;
+  let offset = 0;
+  if(tabLeftInBar + panelWidth > tabbarRect.width){
+    offset = (tabbarRect.width - panelWidth) - tabLeftInBar;
+  }
+  panel.style.left = offset + 'px';
+}
+
+function renderTabs(){
+  const el = document.getElementById('tabbar');
+  el.innerHTML = '';
+  ALL_CATS.forEach(cat=>{
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (cat.special==='orange' ? ' tab-special' : '');
+    tab.dataset.cat = cat.id;
+
+    const face = document.createElement('div');
+    face.className = 'tab-face';
+    const leafCount = cat.sections.reduce((n,s)=>n+s.subs.length,0);
+    const ICONS = { nat:'ℕ', int:'ℤ', frac:'ℚ', pow:'ⁿ', irr:'√', log:'㏒', gen:'∞' };
+    face.innerHTML = `<span class="tab-icon">${ICONS[cat.id]||'•'}</span><span class="tab-label">${cat.title}</span><span class="n">${leafCount}</span>`;
+    face.onclick = (e)=>{
+      e.stopPropagation();
+      const wasOpen = tab.classList.contains('open');
+      closeAllTabsUI();
+      if(!wasOpen) openTabUI(tab);
+    };
+    tab.appendChild(face);
+
+    const panel = document.createElement('div');
+    panel.className = 'tab-panel';
+    panel.onclick = (e)=> e.stopPropagation();
+    buildPanelContent(panel, cat);
+    tab.appendChild(panel);
+    el.appendChild(tab);
+  });
+}
+
+function leafNeedsToolbar(entry){
+  const catId = entry.cat.id;
+  if(catId==='frac' || catId==='pow' || catId==='irr' || catId==='log') return true;
+  if(catId==='gen') return entry.sec.id !== 'gen-nat' && entry.sec.id !== 'gen-int';
+  return false;
+}
+
+function buildPanelContent(panel, cat){
+  panel.innerHTML = '';
+  const isMulti = state.multiMode.has(cat.id);
+  if(!state.multiSelection[cat.id]) state.multiSelection[cat.id] = new Set();
+  const selSet = state.multiSelection[cat.id];
+
+  if(!isMulti){
+    cat.sections.forEach(sec=>{
+      const folder = document.createElement('div');
+      folder.className = 'folder';
+      const head = document.createElement('button');
+      head.className = 'folder-head';
+      head.innerHTML = `<span class="folder-arrow">▸</span><span>${sec.title}</span>`;
+      head.onclick = (e)=>{
+        e.stopPropagation();
+        const wasOpen = folder.classList.contains('open');
+        panel.querySelectorAll('.folder.open').forEach(f=>f.classList.remove('open'));
+        if(!wasOpen) folder.classList.add('open');
+      };
+      folder.appendChild(head);
+
+      const body = document.createElement('div');
+      body.className = 'folder-body';
+      const inner = document.createElement('div');
+      inner.className = 'folder-body-inner';
+
+      const makeLeafBtn = (sub, showStars)=>{
+        const btn = document.createElement('button');
+        btn.className = 'tab-leaf' + (state.currentLeaf && state.currentLeaf.leaf.id===sub.id ? ' active' : '') + (showStars ? ' tl-star-item' : '');
+        if(showStars){
+          const starsHtml = [1,2,3].map(s=>`<span class="star ${s<=sub.level?'on':'off'}">★</span>`).join('');
+          btn.innerHTML = `<span class="tl-stars">${starsHtml}</span>` + (sub.note ? `<span class="tl-note">${sub.note}</span>` : '');
+        } else {
+          btn.textContent = sub.title;
+        }
+        btn.onclick = (e)=>{ e.stopPropagation(); closeAllTabsUI(); selectLeaf(sub.id); };
+        return btn;
+      };
+
+      let i = 0;
+      while(i < sec.subs.length){
+        const sub = sec.subs[i];
+        if(sub.group){
+          const groupName = sub.group;
+          const header = document.createElement('div');
+          header.className = 'tl-group-title';
+          header.textContent = groupName;
+          inner.appendChild(header);
+          while(i < sec.subs.length && sec.subs[i].group === groupName){
+            inner.appendChild(makeLeafBtn(sec.subs[i], true));
+            i++;
+          }
+        } else {
+          inner.appendChild(makeLeafBtn(sub, !!sub.level));
+          i++;
+        }
+      }
+      body.appendChild(inner);
+      folder.appendChild(body);
+      panel.appendChild(folder);
+    });
+
+    const link = document.createElement('button');
+    link.type = 'button';
+    link.className = 'multi-toggle-link';
+    link.textContent = 'Обрати декілька типів';
+    link.onclick = (e)=>{ e.stopPropagation(); state.multiMode.add(cat.id); buildPanelContent(panel, cat); };
+    panel.appendChild(link);
+    return;
+  }
+
+  // ---- режим множинного вибору: плаский список з чекбоксами ----
+  cat.sections.forEach(sec=>{
+    const secHeader = document.createElement('div');
+    secHeader.className = 'tl-group-title';
+    secHeader.textContent = sec.title;
+    panel.appendChild(secHeader);
+    sec.subs.forEach(sub=>{
+      const row = document.createElement('label');
+      row.className = 'multi-row';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = selSet.has(sub.id);
+      cb.onclick = (e)=> e.stopPropagation();
+      cb.onchange = ()=>{
+        if(cb.checked) selSet.add(sub.id); else selSet.delete(sub.id);
+        updateMultiBar(panel, cat);
+      };
+      const labelSpan = document.createElement('span');
+      let labelText = sub.title;
+      if(sub.group) labelText = `${sub.group} — ${sub.note || ('рівень '+sub.level)}`;
+      else if(sub.level) labelText = `${starsText(sub.level)} ${sub.note || sub.title}`;
+      labelSpan.textContent = labelText;
+      row.appendChild(cb);
+      row.appendChild(labelSpan);
+      panel.appendChild(row);
+    });
+  });
+
+  const bar = document.createElement('div');
+  bar.className = 'multi-bar';
+  panel.appendChild(bar);
+  renderMultiBarContent(bar, panel, cat);
+}
+
+function renderMultiBarContent(bar, panel, cat){
+  const selSet = state.multiSelection[cat.id] || new Set();
+  bar.innerHTML = `
+    <span class="multi-count">Обрано: ${selSet.size}</span>
+    <button type="button" class="ghost-btn multi-cancel">Скасувати</button>
+    <button type="button" class="start-btn multi-start" ${selSet.size===0?'disabled':''}>Почати ▸</button>
+  `;
+  bar.querySelector('.multi-cancel').onclick = (e)=>{
+    e.stopPropagation();
+    state.multiMode.delete(cat.id);
+    state.multiSelection[cat.id] = new Set();
+    buildPanelContent(panel, cat);
+  };
+  bar.querySelector('.multi-start').onclick = (e)=>{ e.stopPropagation(); startComboFromSelection(cat.id); };
+}
+function updateMultiBar(panel, cat){
+  const bar = panel.querySelector('.multi-bar');
+  if(bar) renderMultiBarContent(bar, panel, cat);
+}
+
+function startComboFromSelection(catId){
+  const ids = Array.from(state.multiSelection[catId] || []);
+  if(ids.length===0) return;
+  const pool = ids.map(id=>findLeaf(id)).filter(Boolean);
+  if(pool.length===0) return;
+  closeAllTabsUI();
+  state.multiMode.delete(catId);
+  state.multiSelection[catId] = new Set();
+  const anyDigitSelect = pool.some(e=>e.leaf.digitSelect);
+  const anyToolbar = pool.some(e=>leafNeedsToolbar(e));
+  const anyLogTool = pool.some(e=> e.cat.id==='log' || e.sec.id==='gen-log');
+  state.pool = pool;
+  state.currentLeaf = {
+    leaf: { id:'__combo__', title:`Комбінована практика`, digitSelect: anyDigitSelect, _combo:true, _anyToolbar:anyToolbar, _anyLogTool:anyLogTool },
+    sec: { title:'' },
+    cat: { title:'', id:'combo' },
+  };
+  state.quiz = null;
+  renderTabs();
+  renderSettings();
+}
+document.addEventListener('click', closeAllTabsUI);
+window.addEventListener('resize', ()=>{
+  const openTab = document.querySelector('.tab.open');
+  if(openTab) positionTabPanel(openTab);
+});
+
+function selectLeaf(id){
+  const found = findLeaf(id);
+  if(!found) return;
+  state.pool = null;
+  state.currentLeaf = found;
+  state.quiz = null;
+  renderTabs();
+  renderSettings();
+}
+
+const TURTLE_SVG = `
+<svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+  <ellipse cx="35" cy="145" rx="22" ry="14" transform="rotate(-20 35 145)"/>
+  <ellipse cx="185" cy="145" rx="22" ry="14" transform="rotate(20 185 145)"/>
+  <ellipse cx="45" cy="55" rx="20" ry="13" transform="rotate(25 45 55)"/>
+  <ellipse cx="175" cy="55" rx="20" ry="13" transform="rotate(-25 175 55)"/>
+  <path d="M108 162 q10 22 24 5 q-11 -7 -24 -5z"/>
+  <ellipse cx="108" cy="95" rx="85" ry="62"/>
+  <g fill="#ffffff" opacity="0.4">
+    <circle cx="108" cy="68" r="15"/>
+    <circle cx="70" cy="100" r="14"/>
+    <circle cx="146" cy="100" r="14"/>
+    <circle cx="88" cy="130" r="12"/>
+    <circle cx="128" cy="130" r="12"/>
+  </g>
+  <circle cx="188" cy="72" r="23"/>
+</svg>`;
+
+function renderLanding(){
+  document.getElementById('main').innerHTML = `
+    <div class="landing">
+      <h2 class="title">ОБЕРІТЬ РОЗДІЛ ТА СКЛАДНІСТЬ</h2>
+      <div class="landing-art" aria-hidden="true">${TURTLE_SVG}</div>
+    </div>`;
+}
+
+function renderSettings(){
+  const {leaf, sec, cat} = state.currentLeaf;
+  const main = document.getElementById('main');
+  let digitHtml = '';
+  if(leaf.digitSelect){
+    digitHtml = `
+      <div class="field">
+        <label>Цифри для тренування</label>
+        <div class="digit-grid" id="digitGrid">
+          ${[1,2,3,4,5,6,7,8,9,10].map(d=>`<div class="digit-chip ${state.selectedDigits.includes(d)?'on':''}" data-d="${d}">${d}</div>`).join('')}
+        </div>
+      </div>`;
+  }
+  const crumbParts = [cat.title, sec.title, titleWithStars(leaf)].filter(Boolean);
+  let comboListHtml = '';
+  if(leaf._combo && state.pool){
+    const groups = new Map();
+    state.pool.forEach(e=>{
+      if(!groups.has(e.cat.title)) groups.set(e.cat.title, []);
+      groups.get(e.cat.title).push(e.leaf.title);
+    });
+    comboListHtml = [...groups.entries()].map(([catTitle, titles])=>`
+      <div class="combo-group">
+        <div class="combo-group-title">${catTitle}</div>
+        <ul class="combo-list">${titles.map(t=>`<li>${t}</li>`).join('')}</ul>
+      </div>`).join('');
+  }
+  main.innerHTML = `
+    <div class="crumbs">${crumbParts.join(' / ')}</div>
+    <h2 class="title">${titleWithStars(leaf)}</h2>
+    ${comboListHtml}
+    <div class="settings-grid">
+      ${digitHtml}
+      <div class="field">
+        <label>Кількість завдань</label>
+        <input type="number" id="countInput" min="1" max="500" value="10">
+      </div>
+      <div class="field row">
+        <input type="checkbox" id="timerCheck">
+        <label for="timerCheck">Обмежити часом</label>
+        <input type="number" id="timerMinutes" min="1" max="60" value="5" style="width:70px" disabled>
+        <label for="timerMinutes" style="margin:0;font-weight:400;">хв.</label>
+      </div>
+      <button class="start-btn" id="startBtn">Почати ▸</button>
+    </div>
+  `;
+  if(leaf.digitSelect){
+    document.querySelectorAll('.digit-chip').forEach(chip=>{
+      chip.onclick = ()=>{
+        const d = parseInt(chip.dataset.d,10);
+        const idx = state.selectedDigits.indexOf(d);
+        if(idx>=0) state.selectedDigits.splice(idx,1); else state.selectedDigits.push(d);
+        chip.classList.toggle('on');
+      };
+    });
+  }
+  document.getElementById('timerCheck').onchange = (e)=>{
+    document.getElementById('timerMinutes').disabled = !e.target.checked;
+  };
+  document.getElementById('startBtn').onclick = startQuiz;
+}
+
+function startQuiz(){
+  const count = Math.max(1, Math.min(500, parseInt(document.getElementById('countInput').value,10) || 10));
+  const timerOn = document.getElementById('timerCheck').checked;
+  const minutes = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10) || 5);
+  state.quiz = {
+    count, timerOn, secondsLeft: minutes*60, timerId:null,
+    index: 0, correct: 0, mistakes: [], startedAt: Date.now(), awaitingNext:false,
+    phase: 'main', reviewQueue: [], reviewIndex: 0, reviewCorrect: 0,
+    pool: state.pool || [state.currentLeaf],
+  };
+  nextProblem();
+  if(timerOn){
+    state.quiz.timerId = setInterval(()=>{
+      state.quiz.secondsLeft--;
+      updateTimerDisplay();
+      if(state.quiz.secondsLeft<=0){ clearInterval(state.quiz.timerId); finishQuiz(); }
+    },1000);
+  }
+}
+
+function updateTimerDisplay(){
+  const t = document.getElementById('timerDisplay');
+  if(!t || !state.quiz) return;
+  const m = Math.floor(state.quiz.secondsLeft/60), s = state.quiz.secondsLeft%60;
+  t.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  t.classList.toggle('low', state.quiz.secondsLeft<=10);
+}
+
+function nextProblem(){
+  const q = state.quiz;
+  if(q.phase === 'main' && q.index >= q.count){
+    if(q.mistakes.length > 0){
+      q.phase = 'review';
+      q.reviewQueue = q.mistakes.map(m => m.problem);
+      q.reviewIndex = 0;
+    } else {
+      finishQuiz(); return;
+    }
+  }
+  if(q.phase === 'review'){
+    if(q.reviewIndex >= q.reviewQueue.length){ finishQuiz(); return; }
+    q.current = q.reviewQueue[q.reviewIndex];
+    q.awaitingNext = false;
+    renderQuiz();
+    return;
+  }
+  const entry = choice(q.pool);
+  const leaf = entry.leaf;
+  let problem;
+  try{
+    problem = leaf.digitSelect ? leaf.gen(state.selectedDigits) : leaf.gen();
+  }catch(e){ problem = leaf.gen(); }
+  problem.sourceLeafTitle = titleWithStars(leaf);
+  q.current = problem;
+  q.awaitingNext = false;
+  state.totals.generated++;
+  updateGenCounter();
+  renderQuiz();
+}
+
+function needsToolbar(){
+  if(state.currentLeaf.leaf._combo) return state.currentLeaf.leaf._anyToolbar;
+  return leafNeedsToolbar(state.currentLeaf);
+}
+
+function renderQuiz(){
+  const q = state.quiz;
+  const p = q.current;
+  const main = document.getElementById('main');
+  const isReview = q.phase === 'review';
+  const showTools = needsToolbar();
+  state.answerTree = newNumNode('');
+  const pct = isReview
+    ? Math.round((q.reviewIndex/q.reviewQueue.length)*100)
+    : Math.round((q.index/q.count)*100);
+  const headHtml = isReview
+    ? `<div class="progress review-badge">РОБОТА НАД ПОМИЛКАМИ · ${q.reviewIndex+1} / ${q.reviewQueue.length}</div>`
+    : `<div class="progress">ЗАВДАННЯ ${q.index+1} / ${q.count}</div>`;
+  main.innerHTML = `
+    <div class="quiz-head">
+      ${headHtml}
+      ${q.timerOn && !isReview ? `<div class="timer" id="timerDisplay"></div>` : ''}
+    </div>
+    <div class="bar-track ${isReview ? 'review' : ''}"><div class="bar-fill" style="width:${pct}%"></div></div>
+    <div class="problem-card">
+      <div class="problem-label">${p.sourceLeafTitle || titleWithStars(state.currentLeaf.leaf)}</div>
+      <div class="eq">${formatMath(p.text)} = ?</div>
+      <div class="ans-widget">
+        <div class="an-canvas" id="ansCanvas"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+      <div class="prompt-actions">
+        <button id="checkBtn">Перевірити</button>
+        ${showTools ? `<button type="button" class="ghost-btn" id="ansClear">Очистити</button>` : ''}
+      </div>
+    </div>
+    <div class="quiz-actions">
+      <button class="ghost-btn" id="stopBtn">Завершити достроково</button>
+    </div>
+  `;
+  if(q.timerOn && !isReview) updateTimerDisplay();
+  const canvas = document.getElementById('ansCanvas');
+  rerenderAnswerTree(canvas, showTools, handleSubmitOrNext, null);
+  document.getElementById('checkBtn').onclick = handleSubmitOrNext;
+  document.getElementById('stopBtn').onclick = ()=>{ if(q.timerId) clearInterval(q.timerId); finishQuiz(); };
+  if(showTools){
+    const clearBtn = document.getElementById('ansClear');
+    if(clearBtn) clearBtn.onclick = ()=>{
+      state.answerTree = newNumNode('');
+      rerenderAnswerTree(canvas, showTools, handleSubmitOrNext, null);
+    };
+  }
+}
+
+function handleSubmitOrNext(){
+  const q = state.quiz;
+  if(q.awaitingNext){
+    if(q.phase==='review') q.reviewIndex++; else q.index++;
+    nextProblem();
+    return;
+  }
+  const raw = serializeNode(state.answerTree);
+  const p = q.current;
+  let isCorrect;
+  if(p.domain === 'radical2'){
+    const parsedR = parseRadicalAnswer(raw);
+    isCorrect = parsedR !== null && radicalEquals(parsedR, p.answer);
+  } else if(p.domain === 'logans'){
+    const parsedL = parseLogAnswer(raw);
+    isCorrect = parsedL !== null && logAnswerEquals(parsedL, p.answer);
+  } else {
+    const parsed = parseUserAnswer(raw);
+    isCorrect = parsed !== null && parsed.equals(p.answer);
+  }
+  const fb = document.getElementById('feedback');
+
+  if(q.phase === 'main'){
+    state.totals.solved++;
+    if(isCorrect){ q.correct++; state.totals.correct++; }
+    else { q.mistakes.push({ problem: p, your: raw || '—' }); }
+  } else {
+    if(isCorrect) q.reviewCorrect++;
+  }
+
+  if(isCorrect){
+    fb.className = 'feedback ok';
+    fb.innerHTML = '✓ Правильно';
+  } else {
+    fb.className = 'feedback bad';
+    fb.innerHTML = `✗ Неправильно <span class="correct-ans">правильна відповідь: ${formatMath(correctDisplay(p))}</span>`;
+  }
+  document.querySelectorAll('#ansCanvas input, #ansCanvas button, #ansClear').forEach(el=> el.disabled = true);
+
+  let nextLabel = 'Далі ▸';
+  if(q.phase === 'review'){
+    if(q.reviewIndex+1 >= q.reviewQueue.length) nextLabel = 'Завершити';
+  } else {
+    if(q.index+1 >= q.count && q.mistakes.length === 0) nextLabel = 'Завершити';
+  }
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.textContent = nextLabel;
+  checkBtn.classList.add('btn-next');
+  q.awaitingNext = true;
+}
+
+function finishQuiz(){
+  const q = state.quiz;
+  if(q && q.timerId) clearInterval(q.timerId);
+  renderResults();
+}
+
+function renderResults(){
+  const q = state.quiz;
+  const main = document.getElementById('main');
+  const attempted = q.index + (q.phase==='main' && q.awaitingNext ? 1 : 0);
+  const pct = attempted>0 ? Math.round((q.correct/attempted)*100) : 0;
+  const seconds = Math.round((Date.now()-q.startedAt)/1000);
+  const mm = Math.floor(seconds/60), ss = seconds%60;
+  const hadReview = q.reviewQueue.length > 0;
+  const ringColor = pct>=80 ? 'var(--good)' : pct>=50 ? 'var(--accent2)' : 'var(--bad)';
+  main.innerHTML = `
+    <div class="results">
+      <div class="crumbs"><b>${titleWithStars(state.currentLeaf.leaf)}</b> — результат</div>
+      <div class="score-hero">
+        <div class="score-ring" style="--pct:${pct};--ring-color:${ringColor}">
+          <div class="score-ring-inner">${pct}%</div>
+        </div>
+        <div class="score-hero-text">
+          <div class="big">${q.correct}/${attempted}</div>
+          <div class="label">правильних відповідей</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-icon">⏱</div>
+          <div><b>${mm}:${String(ss).padStart(2,'0')}</b><span>витрачено часу</span></div>
+        </div>
+        <div class="stat-card bad">
+          <div class="stat-icon">✗</div>
+          <div><b>${q.mistakes.length}</b><span>помилок</span></div>
+        </div>
+        ${hadReview ? `
+        <div class="stat-card good">
+          <div class="stat-icon">✓</div>
+          <div><b>${q.reviewCorrect}/${q.reviewQueue.length}</b><span>виправлено на повторі</span></div>
+        </div>` : ''}
+      </div>
+      <div class="mistakes">
+        ${q.mistakes.length===0 ? `<div class="no-mistakes">Жодної помилки — чудова робота 🎉</div>` : `
+          <h3>Робота над помилками</h3>
+          ${q.mistakes.map(m=>`
+            <div class="mistake-item">
+              <span>${formatMath(m.problem.text)} = ?</span>
+              <span class="m-your">твоя: ${formatMath(m.your)}</span>
+              <span class="m-correct">правильно: ${formatMath(correctDisplay(m.problem))}</span>
+            </div>`).join('')}
+        `}
+      </div>
+      <div class="result-actions">
+        <button class="start-btn" id="retryBtn">Ще раз (нові приклади)</button>
+        <button class="ghost-btn" id="menuBtn">До налаштувань</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('retryBtn').onclick = startQuiz;
+  document.getElementById('menuBtn').onclick = renderSettings;
+}
+
+function updateGenCounter(){
+  const el = document.getElementById('genCount');
+  if(el) el.textContent = state.totals.generated.toLocaleString('uk-UA');
+}
+
+/* init */
+renderTabs();
+renderLanding();
+updateGenCounter();
+</script>
+</body>
+</html>
